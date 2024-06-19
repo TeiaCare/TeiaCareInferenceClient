@@ -1,0 +1,6 @@
+[requires]
+gtest/1.14.0
+grpc/1.54.3
+
+[generators]
+CMakeDeps

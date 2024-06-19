@@ -1,0 +1,7 @@
+[requires]
+benchmark/1.8.3
+#triton-client/2.31.0@teiacare/stable
+
+[generators]
+CMakeDeps
+
