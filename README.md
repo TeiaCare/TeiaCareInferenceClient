@@ -3,6 +3,8 @@ Welcome to TeiaCareInferenceClient!
 
 *TeiaCareInferenceClient* is a C++ inference client library that implements KServe protocol.
 
+![TeiaCareInferenceClient](https://socialify.git.ci/TeiaCare/TeiaCareinferenceclient/image?description=1&font=Raleway&name=1&pattern=Solid&theme=Auto)
+
 ---
 
 ## Getting Started
