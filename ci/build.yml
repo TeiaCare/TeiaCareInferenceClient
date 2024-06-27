@@ -22,7 +22,8 @@ schedules:
 parameters:
 - name: BUILD_TYPES
   type: object
-  default: ['Debug', 'Release', 'RelWithDebInfo']
+  default: ['Debug']
+  # default: ['Debug', 'Release', 'RelWithDebInfo']
 
 variables:
   - group: Artifactory
@@ -33,23 +34,23 @@ jobs:
       strategy:
         matrix:
 
-          # Full path to MSVC 2022 build environment setup script:
-          # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md#visual-studio-enterprise-2022
-          windows2022_msvc2022:
-            AGENT: 'windows-2022'
-            COMPILER: visual_studio
-            COMPILER_VERSION: 17
-            SETUP_BUILD_ENV: 'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
-            ACTIVATE_VIRTUAL_ENV: 'call ".venv\Scripts\activate.bat"'
+          # # Full path to MSVC 2022 build environment setup script:
+          # # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md#visual-studio-enterprise-2022
+          # windows2022_msvc2022:
+          #   AGENT: 'windows-2022'
+          #   COMPILER: visual_studio
+          #   COMPILER_VERSION: 17
+          #   SETUP_BUILD_ENV: 'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+          #   ACTIVATE_VIRTUAL_ENV: 'call ".venv\Scripts\activate.bat"'
 
-          # Full path to MSVC 2019 build environment setup script:
-          # https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md#visual-studio-enterprise-2019
-          windows2019_msvc2019:
-            AGENT: 'windows-2019'
-            COMPILER: visual_studio
-            COMPILER_VERSION: 16
-            SETUP_BUILD_ENV: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
-            ACTIVATE_VIRTUAL_ENV: 'call ".venv\Scripts\activate.bat"'
+          # # Full path to MSVC 2019 build environment setup script:
+          # # https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md#visual-studio-enterprise-2019
+          # windows2019_msvc2019:
+          #   AGENT: 'windows-2019'
+          #   COMPILER: visual_studio
+          #   COMPILER_VERSION: 16
+          #   SETUP_BUILD_ENV: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+          #   ACTIVATE_VIRTUAL_ENV: 'call ".venv\Scripts\activate.bat"'
 
           # # Not available yet
           # ubuntu2404_gcc14:
@@ -74,19 +75,19 @@ jobs:
             SETUP_BUILD_ENV: 'echo $(COMPILER) $(COMPILER_VERSION)'
             ACTIVATE_VIRTUAL_ENV: 'source .venv/bin/activate'
 
-          ubuntu2204_clang15:
-            AGENT: 'ubuntu-22.04'
-            COMPILER: clang
-            COMPILER_VERSION: 15
-            SETUP_BUILD_ENV: 'echo $(COMPILER) $(COMPILER_VERSION)'
-            ACTIVATE_VIRTUAL_ENV: 'source .venv/bin/activate'
+          # ubuntu2204_clang15:
+          #   AGENT: 'ubuntu-22.04'
+          #   COMPILER: clang
+          #   COMPILER_VERSION: 15
+          #   SETUP_BUILD_ENV: 'echo $(COMPILER) $(COMPILER_VERSION)'
+          #   ACTIVATE_VIRTUAL_ENV: 'source .venv/bin/activate'
 
-          macos14_clang15:
-            AGENT: 'macOS-14'
-            COMPILER: clang
-            COMPILER_VERSION: 15
-            SETUP_BUILD_ENV: 'echo $(COMPILER) $(COMPILER_VERSION)'
-            ACTIVATE_VIRTUAL_ENV: 'source .venv/bin/activate'
+          # macos14_clang15:
+          #   AGENT: 'macOS-14'
+          #   COMPILER: clang
+          #   COMPILER_VERSION: 15
+          #   SETUP_BUILD_ENV: 'echo $(COMPILER) $(COMPILER_VERSION)'
+          #   ACTIVATE_VIRTUAL_ENV: 'source .venv/bin/activate'
 
       pool:
         vmImage: $(AGENT)
@@ -230,6 +231,7 @@ jobs:
             python3 scripts/cmake/build.py ${{BUILD_TYPE}}
             python3 scripts/cmake/install.py ${{BUILD_TYPE}}
           displayName: 'Benchmarks'
+          condition: false
           timeoutInMinutes: 5
           env:
             CONAN_USER_HOME: $(Build.SourcesDirectory)
@@ -237,11 +239,13 @@ jobs:
         - script: |
             $(ACTIVATE_VIRTUAL_ENV)
             $(SETUP_BUILD_ENV)
-            conan remote add teiacare_inference_client $(artifactory.url)/teiacare_inference_client
-            conan user $(artifactory.username) -p $(artifactory.password) -r teiacare_inference_client
+            conan config set general.revisions_enabled=0
+            conan remote add teiacare $(artifactory.url)/teiacare
+            conan user $(artifactory.username) -p $(artifactory.password) -r teiacare
             python3 scripts/conan/create.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION)
-            python3 scripts/conan/upload.py teiacare_inference_client teiacare_inference_client/0.1.0@
-          displayName: 'Conan Package'
+          # python3 scripts/conan/upload.py teiacare teiacare_inference_client/0.1.0@
+          displayName: 'Create Conan Package'
           timeoutInMinutes: 5
           env:
             CONAN_USER_HOME: $(Build.SourcesDirectory)
+
