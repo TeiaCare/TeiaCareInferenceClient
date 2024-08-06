@@ -12,7 +12,7 @@ set(PROTO_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/proto)
 include(grpc_common)
 
 configure_file(
-    src/version.cpp.in 
+    src/version.cpp.in
     ${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp
 )
 
@@ -99,14 +99,4 @@ endif()
 
 if(TC_ENABLE_EXAMPLES)
     add_subdirectory(examples)
-endif()
-
-if(TC_ENABLE_DOCS)
-    include(doxygen)
-    setup_docs(
-        ${TARGET_NAME}
-        "${TARGET_HEADERS}"
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/teiacare/inference_client
-        ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile
-    )
 endif()

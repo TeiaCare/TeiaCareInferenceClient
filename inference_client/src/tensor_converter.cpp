@@ -1,4 +1,19 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "tensor_converter.hpp"
+
 #include <bit>
 
 namespace tc::infer
@@ -26,14 +41,14 @@ auto tensor_converter::get_infer_request(const tc::infer::infer_request& infer_r
 
         const size_t input_size = request_input.data_size();
         tensor_data_converter_call_wrapper<tensor_data_writer>(
-            request_input.datatype(), 
-            tensor, 
-            request_input.raw_data(), 
+            request_input.datatype(),
+            tensor,
+            request_input.raw_data(),
             input_size);
 
         // DEBUG
         // auto source_data = request_input.raw_data();
-        // auto data = static_cast<const float*>((void*)source_data);        
+        // auto data = static_cast<const float*>((void*)source_data);
         // // auto contents = tensor->contents().bytes_contents().data();
         // auto contents = tensor->mutable_contents()->mutable_fp32_contents();
         // contents->Add(&data[0], &data[0]+input_size);
@@ -61,9 +76,8 @@ auto tensor_converter::get_infer_response(const inference::ModelInferResponse& r
             tc::infer::infer_tensor infer_tensor_output(
                 std::vector<std::byte>(std::bit_cast<std::byte*>(output_content.data()), std::bit_cast<std::byte*>(output_content.data() + output_content.size())),
                 std::vector<int64_t>(response_output.shape().begin(), response_output.shape().end()),
-                tc::infer::data_type(response_output.datatype()), 
-                response_output.name()
-            );
+                tc::infer::data_type(response_output.datatype()),
+                response_output.name());
 
             infer_response.add_output_tensor(std::move(infer_tensor_output));
             ++raw_output_index;

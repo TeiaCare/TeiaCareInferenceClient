@@ -1,4 +1,19 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <teiacare/inference_client/client_factory.hpp>
+
 #include <spdlog/spdlog.h>
 
 int main(int argc, char** argv)
@@ -15,20 +30,20 @@ int main(int argc, char** argv)
         auto is_server_live = client->is_server_live();
         spdlog::debug("\n");
         spdlog::debug("is_server_live: {} ", is_server_live);
-        
+
         // Server Ready
-        auto is_server_ready = client->is_server_ready();    
+        auto is_server_ready = client->is_server_ready();
         spdlog::debug("\n");
         spdlog::debug("is_server_ready: {} ", is_server_ready);
 
         // Server Metadata
-        auto server_metadata = client->server_metadata();    
+        auto server_metadata = client->server_metadata();
         spdlog::debug("\n");
         spdlog::debug("server_name: {}", server_metadata.server_name);
         spdlog::debug("server_version: {}", server_metadata.server_version);
         spdlog::debug("server_extensions: {}", fmt::join(server_metadata.server_extensions, " "));
     }
-    catch(const std::runtime_error& ex)
+    catch (const std::runtime_error& ex)
     {
         spdlog::error("Error. {}", ex.what());
         return EXIT_FAILURE;

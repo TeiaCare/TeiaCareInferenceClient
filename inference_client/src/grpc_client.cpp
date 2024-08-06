@@ -1,15 +1,30 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "grpc_client.hpp"
+
 #include <grpcpp/channel.h>
-#include <grpcpp/create_channel.h>
 #include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
 #include <grpcpp/support/status.h>
 
 namespace tc::infer
 {
 grpc_client::grpc_client(std::unique_ptr<inference::GRPCInferenceService::StubInterface> stub, std::chrono::milliseconds rpc_timeout)
-    : _stub{ std::move(stub) }
-    , _tensor_converter{ std::make_unique<tc::infer::tensor_converter>() }
-    , _rpc_timeout{ rpc_timeout }
+    : _stub{std::move(stub)}
+    , _tensor_converter{std::make_unique<tc::infer::tensor_converter>()}
+    , _rpc_timeout{rpc_timeout}
 {
 }
 
@@ -19,16 +34,16 @@ grpc_client::~grpc_client()
 
 void grpc_client::check_status(grpc::Status rpc_status) const
 {
-    switch(rpc_status.error_code())
+    switch (rpc_status.error_code())
     {
-        case grpc::StatusCode::OK:
-            break;
-        case grpc::StatusCode::DEADLINE_EXCEEDED:
-            throw tc::infer::timeout_error(rpc_status.error_message());
-            break;
-        default:
-            throw std::runtime_error(rpc_status.error_message());
-            break;
+    case grpc::StatusCode::OK:
+        break;
+    case grpc::StatusCode::DEADLINE_EXCEEDED:
+        throw tc::infer::timeout_error(rpc_status.error_message());
+        break;
+    default:
+        throw std::runtime_error(rpc_status.error_message());
+        break;
     }
 }
 
@@ -68,8 +83,8 @@ tc::infer::server_metadata grpc_client::server_metadata()
     grpc::Status rpc_status = _stub->ServerMetadata(&context, request, &response);
     check_status(rpc_status);
 
-    const std::vector<std::string> server_extensions = { response.extensions().begin(), response.extensions().end() };
-    tc::infer::server_metadata metadata = {response.name(), response.version(), std::move(server_extensions) };
+    const std::vector<std::string> server_extensions = {response.extensions().begin(), response.extensions().end()};
+    tc::infer::server_metadata metadata = {response.name(), response.version(), std::move(server_extensions)};
 
     return metadata;
 }
@@ -99,10 +114,10 @@ std::vector<std::string> grpc_client::model_list()
     context.set_deadline(std::chrono::system_clock::now() + _rpc_timeout);
     grpc::Status rpc_status = _stub->ModelList(&context, request, &response);
     check_status(rpc_status);
-    
+
     const auto models = response.models();
     const std::vector<std::string> model_list(models.begin(), models.end());
-    
+
     return model_list;
 }
 
@@ -151,21 +166,21 @@ tc::infer::model_metadata grpc_client::model_metadata(const std::string& model_n
 
     tc::infer::model_metadata metadata;
     metadata.model_name = response.name();
-    metadata.model_versions = std::vector<std::string>{ response.versions().begin(), response.versions().end() };
+    metadata.model_versions = std::vector<std::string>{response.versions().begin(), response.versions().end()};
     metadata.platform = response.platform();
-    
-    for(auto&& input : response.inputs())
+
+    for (auto&& input : response.inputs())
     {
-        std::vector<int64_t> shape { input.shape().begin(), input.shape().end() };
+        std::vector<int64_t> shape{input.shape().begin(), input.shape().end()};
         metadata.inputs.push_back({input.name(), input.datatype(), shape});
     }
 
-    for(auto&& output : response.outputs())
+    for (auto&& output : response.outputs())
     {
-        std::vector<int64_t> shape { output.shape().begin(), output.shape().end() };
+        std::vector<int64_t> shape{output.shape().begin(), output.shape().end()};
         metadata.outputs.push_back({output.name(), output.datatype(), shape});
     }
-    
+
     return metadata;
 }
 
@@ -174,12 +189,12 @@ tc::infer::infer_response grpc_client::infer(const tc::infer::infer_request& inf
     inference::ModelInferResponse response;
     grpc::ClientContext context;
 
-    std::map<std::string, std::string> metadata {};
+    std::map<std::string, std::string> metadata{};
     for (auto&& [key, value] : metadata)
     {
         context.AddMetadata(key, value);
     }
-    
+
     auto request = _tensor_converter->get_infer_request(infer_request);
 
     context.set_deadline(std::chrono::system_clock::now() + infer_timeout);

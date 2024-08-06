@@ -21,16 +21,14 @@ def parse():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("build_type", choices=['Debug', 'Release', 'RelWithDebInfo'])
     parser.add_argument("--build_dir", help="Build Directory", required=False, default='./build')
-    parser.add_argument("--install_dir", help="Install Directory", required=False, default='./install')
     args, _ = parser.parse_known_args()
     return args
 
 def main():
     args = parse()
     run([
-        'cmake',
-        '--install', f'{args.build_dir}/{args.build_type}',
-        '--prefix', args.install_dir
+        'cpack',
+        '--config', f'{args.build_dir}/{args.build_type}/CPackConfig.cmake',
     ])
 
 if __name__ == '__main__':

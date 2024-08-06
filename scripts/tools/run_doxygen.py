@@ -1,4 +1,6 @@
 #!/usr/bin/python
+
+#!/usr/bin/python
 # Copyright 2024 TeiaCare
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +16,24 @@
 # limitations under the License.
 
 import argparse
+from command import run
+import pathlib
 import sys
-from .command import run, check_venv
 
 def parse():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("build_type", choices=['Debug', 'Release', 'RelWithDebInfo'])
-    parser.add_argument("--build_dir", help="Build Directory", required=False, default='./build')
-    parser.add_argument("--install_dir", help="Install Directory", required=False, default='./install')
-    args, _ = parser.parse_known_args()
-    return args
+    parser.add_argument("--doxyfile_path", help="Path of the Doxyfile to be used", default="video_io/docs/Doxyfile")
+    return parser.parse_args()
 
 def main():
     args = parse()
-    run([
-        'cmake',
-        '--install', f'{args.build_dir}/{args.build_type}',
-        '--prefix', args.install_dir
-    ])
+    doxyfile_path = pathlib.Path(args.doxyfile_path).absolute()
+    if not doxyfile_path.exists() or not doxyfile_path.is_file():
+        raise RuntimeError(f'Doxyfile does not exist: {doxyfile_path}')
+
+    print("Doxygen version:")
+    run(['doxygen', '--version'])
+    run(['doxygen', doxyfile_path])
 
 if __name__ == '__main__':
-    check_venv()
     sys.exit(main())

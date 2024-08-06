@@ -1,16 +1,29 @@
-#include <benchmark/benchmark.h>
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "grpc_client.h"
+#include <benchmark/benchmark.h>
 
-
-#define FAIL_IF_ERR(X, MSG)                                                                                                                                                        \
-{                                                                    \
-    triton::client::Error err = (X);                                 \
-    if (!err.IsOk())                                                 \
-    {                                                                \
-        std::cerr << "error: " << (MSG) << ": " << err << std::endl; \
-        exit(1);                                                     \
-    }                                                                \
-}
+#define FAIL_IF_ERR(X, MSG)                                              \
+    {                                                                    \
+        triton::client::Error err = (X);                                 \
+        if (!err.IsOk())                                                 \
+        {                                                                \
+            std::cerr << "error: " << (MSG) << ": " << err << std::endl; \
+            exit(1);                                                     \
+        }                                                                \
+    }
 
 static void benchmark_triton_client(benchmark::State& state)
 {
@@ -43,13 +56,12 @@ static void benchmark_triton_client(benchmark::State& state)
     {
         err = "unable to create grpc client";
     }
-    
-    FAIL_IF_ERR(triton::client::InferenceServerGrpcClient::Create(&client, url, verbose, use_ssl, ssl_options, triton::client::KeepAliveOptions(), use_cached_channel), err);
-    
-    std::vector<int32_t> input0_data { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-    std::vector<int32_t> input1_data { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-    std::vector<int64_t> shape { 1, 16 };
 
+    FAIL_IF_ERR(triton::client::InferenceServerGrpcClient::Create(&client, url, verbose, use_ssl, ssl_options, triton::client::KeepAliveOptions(), use_cached_channel), err);
+
+    std::vector<int32_t> input0_data{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    std::vector<int32_t> input1_data{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    std::vector<int64_t> shape{1, 16};
 
     for (auto _ : state)
     {
@@ -75,7 +87,7 @@ static void benchmark_triton_client(benchmark::State& state)
         FAIL_IF_ERR(triton::client::InferRequestedOutput::Create(&output0, "OUTPUT0"), "unable to get 'OUTPUT0'");
         std::shared_ptr<triton::client::InferRequestedOutput> output0_ptr;
         output0_ptr.reset(output0);
-        
+
         FAIL_IF_ERR(triton::client::InferRequestedOutput::Create(&output1, "OUTPUT1"), "unable to get 'OUTPUT1'");
         std::shared_ptr<triton::client::InferRequestedOutput> output1_ptr;
         output1_ptr.reset(output1);
@@ -85,8 +97,8 @@ static void benchmark_triton_client(benchmark::State& state)
         options.model_version_ = model_version;
         options.client_timeout_ = client_timeout;
 
-        std::vector<triton::client::InferInput*> inputs = { input0_ptr.get(), input1_ptr.get() };
-        std::vector<const triton::client::InferRequestedOutput*> outputs = { output0_ptr.get(), output1_ptr.get() };
+        std::vector<triton::client::InferInput*> inputs = {input0_ptr.get(), input1_ptr.get()};
+        std::vector<const triton::client::InferRequestedOutput*> outputs = {output0_ptr.get(), output1_ptr.get()};
 
         triton::client::InferResult* results;
         FAIL_IF_ERR(client->Infer(&results, options, inputs, outputs, http_headers, compression_algorithm), "unable to run model");

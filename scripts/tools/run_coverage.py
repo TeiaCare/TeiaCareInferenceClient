@@ -7,16 +7,16 @@ def check():
 
 def parse():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("compiler", help="Compiler name", choices=['gcc', 'clang', 'apple-clang', 'msvc'])
+    parser.add_argument("compiler", help="Compiler name", choices=['gcc', 'clang', 'visual_studio'])
     parser.add_argument("compiler_version", help="Compiler version")
     parser.add_argument("--xml_coverage_path", help="Coverage xml results path", required=False, default='./results/coverage/cobertura.xml')
     parser.add_argument("--html_coverage_path", help="Coverage html results path", required=False, default='./results/coverage/html/coverage.html')
     return parser.parse_args()
 
-def coverage(args):    
+def coverage(args):
     coverage_tool = None
     if args.compiler == 'gcc':
-        coverage_tool = f'gcov-{args.compiler_version}'    
+        coverage_tool = f'gcov-{args.compiler_version}'
     if args.compiler == 'clang' or args.compiler == 'apple-clang':
         coverage_tool = f'llvm-cov-{args.compiler_version} gcov'
     if args.compiler == 'msvc':
@@ -28,9 +28,9 @@ def coverage(args):
     run([
         'gcovr', '-r', '.',
         '--xml', '--xml-pretty', '--output', args.xml_coverage_path,
-        '--html-title', 'TeiaCareInferenceClient', '--html-details', args.html_coverage_path,
-        '--filter', 'inference_client/.*',
-        '--exclude', 'inference_client/tests/.*',
+        '--html-title', 'TeiaCareVideoIO', '--html-details', args.html_coverage_path,
+        '--filter', 'video_io/.*',
+        '--exclude', 'video_io/tests/.*',
         '--gcov-executable', coverage_tool,
         '--exclude-unreachable-branches',
         '--exclude-throw-branches'

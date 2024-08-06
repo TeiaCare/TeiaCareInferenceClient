@@ -1,4 +1,19 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <teiacare/inference_client/client_factory.hpp>
+
 #include <spdlog/spdlog.h>
 
 int main(int argc, char** argv)
@@ -10,14 +25,14 @@ int main(int argc, char** argv)
     auto client = tc::infer::client_factory::create_client("localhost:8001");
 
     {
-        std::vector<int32_t> data_0 { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-        std::vector<int32_t> data_1 { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-        std::vector<int64_t> shape { 1, 16 };
+        std::vector<int32_t> data_0{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        std::vector<int32_t> data_1{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        std::vector<int64_t> shape{1, 16};
 
         tc::infer::infer_request request;
         request.model_name = "simple_int32";
         request.model_version = "1";
-        request.id = "REQUEST_0";    
+        request.id = "REQUEST_0";
         request.add_input_tensor(data_0.data(), data_0.size(), shape, "INPUT0");
         request.add_input_tensor(data_1.data(), data_1.size(), shape, "INPUT1");
 
@@ -26,7 +41,7 @@ int main(int argc, char** argv)
         {
             response = client->infer(request);
         }
-        catch(const std::runtime_error& ex)
+        catch (const std::runtime_error& ex)
         {
             spdlog::error("Unable to perform inference: {}", ex.what());
             return EXIT_FAILURE;
@@ -51,14 +66,14 @@ int main(int argc, char** argv)
     }
 
     {
-        std::vector<int8_t> data_0 { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-        std::vector<int8_t> data_1 { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-        std::vector<int64_t> shape { 1, 16 };
+        std::vector<int8_t> data_0{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        std::vector<int8_t> data_1{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        std::vector<int64_t> shape{1, 16};
 
         tc::infer::infer_request request;
         request.model_name = "simple_int8";
         request.model_version = "1";
-        request.id = "REQUEST_0";    
+        request.id = "REQUEST_0";
         request.add_input_tensor(data_0.data(), data_0.size(), shape, "INPUT0");
         request.add_input_tensor(data_1.data(), data_1.size(), shape, "INPUT1");
 
@@ -67,12 +82,12 @@ int main(int argc, char** argv)
         {
             response = client->infer(request);
         }
-        catch(const std::runtime_error& ex)
+        catch (const std::runtime_error& ex)
         {
             spdlog::error("Unable to perform inference: {}", ex.what());
             return EXIT_FAILURE;
         }
-        
+
         spdlog::info("Model name: {}", response.model_name);
         spdlog::info("Model version: {}", response.model_version);
         spdlog::info("Output layers");
@@ -91,49 +106,49 @@ int main(int argc, char** argv)
         }
     }
 
-/*
-    {
-        std::vector<const char*> data_0 { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
-        std::vector<char> data_1 { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-        std::vector<int64_t> shape { 1, 16 };
+    /*
+        {
+            std::vector<const char*> data_0 { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
+            std::vector<char> data_1 { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+            std::vector<int64_t> shape { 1, 16 };
 
-        tc::infer::infer_request request;
-        request.model_name = "simple_string";
-        request.model_version = "1";
-        request.id = "string";    
-        request.add_input_tensor(data_0.data(), data_0.size(), shape, "INPUT0");
-        request.add_input_tensor(data_1.data(), data_1.size(), shape, "INPUT1");
-        
-        tc::infer::infer_response response;
-        try
-        {
-            response = client->infer(request);
-        }
-        catch(const std::runtime_error& ex)
-        {
-            spdlog::error("Unable to perform inference: {}", ex.what());
-            return EXIT_FAILURE;
-        }
-        
-        spdlog::info("Model name: {}", response.model_name);
-        spdlog::info("Model version: {}", response.model_version);
-        spdlog::info("Output layers");
-        for (const auto& output : response.output_tensors)
-        {
-            spdlog::info("- Name: {}", output.name);
-            spdlog::info("- DataType: {}", output.datatype.str());
-            spdlog::info("- Shape: [{}]", fmt::join(output.shape, ", "));
-            spdlog::info("- Output layer data");
-            auto size = std::accumulate(output.shape.begin(), output.shape.end(), 1, std::multiplies<>());
-            
-            int8_t* output_data = output.as<int8_t>();
-            for (auto i = 0; i < size; ++i)
+            tc::infer::infer_request request;
+            request.model_name = "simple_string";
+            request.model_version = "1";
+            request.id = "string";
+            request.add_input_tensor(data_0.data(), data_0.size(), shape, "INPUT0");
+            request.add_input_tensor(data_1.data(), data_1.size(), shape, "INPUT1");
+
+            tc::infer::infer_response response;
+            try
             {
-                spdlog::debug("  {}: {}", i, output_data[i]);
+                response = client->infer(request);
+            }
+            catch(const std::runtime_error& ex)
+            {
+                spdlog::error("Unable to perform inference: {}", ex.what());
+                return EXIT_FAILURE;
+            }
+
+            spdlog::info("Model name: {}", response.model_name);
+            spdlog::info("Model version: {}", response.model_version);
+            spdlog::info("Output layers");
+            for (const auto& output : response.output_tensors)
+            {
+                spdlog::info("- Name: {}", output.name);
+                spdlog::info("- DataType: {}", output.datatype.str());
+                spdlog::info("- Shape: [{}]", fmt::join(output.shape, ", "));
+                spdlog::info("- Output layer data");
+                auto size = std::accumulate(output.shape.begin(), output.shape.end(), 1, std::multiplies<>());
+
+                int8_t* output_data = output.as<int8_t>();
+                for (auto i = 0; i < size; ++i)
+                {
+                    spdlog::debug("  {}: {}", i, output_data[i]);
+                }
             }
         }
-    }
-*/
+    */
 
     return EXIT_SUCCESS;
 }

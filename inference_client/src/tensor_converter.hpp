@@ -1,17 +1,34 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #pragma once
 
 #include <teiacare/inference_client/data_type.hpp>
-#include <teiacare/inference_client/infer_response.hpp>
 #include <teiacare/inference_client/infer_request.hpp>
+#include <teiacare/inference_client/infer_response.hpp>
+
 #include <services.grpc.pb.h>
 
 namespace tc::infer::util
 {
-    template <typename T, typename... Ts>
-    struct is_any : std::disjunction<std::is_same<T, Ts>...> {};
+template <typename T, typename... Ts>
+struct is_any : std::disjunction<std::is_same<T, Ts>...>
+{
+};
 
-    template <typename T, typename... Ts>
-    inline constexpr bool is_any_v = is_any<T, Ts...>::value;
+template <typename T, typename... Ts>
+inline constexpr bool is_any_v = is_any<T, Ts...>::value;
 }
 
 namespace tc::infer
@@ -22,7 +39,7 @@ public:
     auto get_infer_request(const tc::infer::infer_request& infer_request) const -> inference::ModelInferRequest;
     auto get_infer_response(const inference::ModelInferResponse& response) const -> tc::infer::infer_response;
 
-    template<typename T, typename Tensor>
+    template <typename T, typename Tensor>
     constexpr static auto getTensorContents(Tensor* tensor)
     {
         if constexpr (std::is_same_v<T, bool>)
@@ -36,7 +53,7 @@ public:
                 return tensor->mutable_contents()->mutable_bool_contents();
             }
         }
-        
+
         if constexpr (util::is_any_v<T, uint8_t, uint16_t, uint32_t>)
         {
             if constexpr (std::is_const_v<Tensor>)
@@ -48,7 +65,7 @@ public:
                 return tensor->mutable_contents()->mutable_uint_contents();
             }
         }
-        
+
         if constexpr (std::is_same_v<T, uint64_t>)
         {
             if constexpr (std::is_const_v<Tensor>)
@@ -60,7 +77,7 @@ public:
                 return tensor->mutable_contents()->mutable_uint64_contents();
             }
         }
-        
+
         if constexpr (util::is_any_v<T, int8_t, int16_t, int32_t>)
         {
             if constexpr (std::is_const_v<Tensor>)
@@ -84,8 +101,8 @@ public:
                 return tensor->mutable_contents()->mutable_int64_contents();
             }
         }
-        
-        if constexpr (util::is_any_v<T, float>) // fp16, 
+
+        if constexpr (util::is_any_v<T, float>) // fp16,
         {
             if constexpr (std::is_const_v<Tensor>)
             {
@@ -96,7 +113,7 @@ public:
                 return tensor->mutable_contents()->mutable_fp32_contents();
             }
         }
-        
+
         if constexpr (std::is_same_v<T, double>)
         {
             if constexpr (std::is_const_v<Tensor>)
@@ -125,7 +142,7 @@ public:
     }
 
 private:
-    template<typename T, typename Tensor>
+    template <typename T, typename Tensor>
     struct tensor_data_writer
     {
         constexpr void operator()(Tensor* tensor, const void* source_data, size_t size) const
@@ -156,64 +173,79 @@ private:
         }
     };
 
-/*
-    template<typename T, typename Tensor>
-    struct tensor_data_reader
-    {
-        // constexpr
-        void operator()(const Tensor* tensor, infer_tensor* output, size_t size) const
+    /*
+        template<typename T, typename Tensor>
+        struct tensor_data_reader
         {
-            const auto bytes_to_copy = size * sizeof(T);
-            std::vector<std::byte> data;
-            data.resize(bytes_to_copy);
-            const auto contents = tc::infer::tensor_converter::getTensorContents<T>(tensor);
-            
-            if constexpr (std::is_same_v<T, char>)
+            // constexpr
+            void operator()(const Tensor* tensor, infer_tensor* output, size_t size) const
             {
-                std::memcpy(data.data(), contents, size * sizeof(uint8_t));
-                output->data = std::move(data.data());
-                // output->data = data.data();
-                return;
-            }
-            
-            if constexpr (util::is_any_v<T, int8_t, uint8_t, int16_t, uint16_t>) // fp16
-            {
-                for (auto i = 0U; i < size; ++i)
+                const auto bytes_to_copy = size * sizeof(T);
+                std::vector<std::byte> data;
+                data.resize(bytes_to_copy);
+                const auto contents = tc::infer::tensor_converter::getTensorContents<T>(tensor);
+
+                if constexpr (std::is_same_v<T, char>)
                 {
-                    std::memcpy(&(data[i * sizeof(T)]), &(contents[i]), sizeof(T));
+                    std::memcpy(data.data(), contents, size * sizeof(uint8_t));
+                    output->data = std::move(data.data());
+                    // output->data = data.data();
+                    return;
                 }
+
+                if constexpr (util::is_any_v<T, int8_t, uint8_t, int16_t, uint16_t>) // fp16
+                {
+                    for (auto i = 0U; i < size; ++i)
+                    {
+                        std::memcpy(&(data[i * sizeof(T)]), &(contents[i]), sizeof(T));
+                    }
+                    output->data = std::move(data.data());
+                    // output->data = data.data();
+                    return;
+                }
+
+                std::memcpy(data.data(), contents, bytes_to_copy);
                 output->data = std::move(data.data());
                 // output->data = data.data();
-                return;
             }
+        };
+    */
 
-            std::memcpy(data.data(), contents, bytes_to_copy);
-            output->data = std::move(data.data());
-            // output->data = data.data();
-        }
-    };
-*/
-
-    template<template<typename, typename> class func_t, typename TensorT, typename... Args>
-    // constexpr 
+    template <template <typename, typename> class func_t, typename TensorT, typename... Args>
+    // constexpr
     void tensor_data_converter_call_wrapper(tc::infer::data_type type, TensorT* tensor, Args&&... args) const
     {
-        switch(type)
+        switch (type)
         {
-            case data_type::Bool:   return std::invoke(func_t<bool, TensorT>(), tensor, args...);
-            case data_type::Uint8:  return std::invoke(func_t<uint8_t, TensorT>(), tensor, args...);
-            case data_type::Uint16: return std::invoke(func_t<uint16_t, TensorT>(), tensor, args...);
-            case data_type::Uint32: return std::invoke(func_t<uint32_t, TensorT>(), tensor, args...);
-            case data_type::Uint64: return std::invoke(func_t<uint64_t, TensorT>(), tensor, args...);
-            case data_type::Int8:   return std::invoke(func_t<int8_t, TensorT>(), tensor, args...);
-            case data_type::Int16:  return std::invoke(func_t<int16_t, TensorT>(), tensor, args...);
-            case data_type::Int32:  return std::invoke(func_t<int32_t, TensorT>(), tensor, args...);
-            case data_type::Int64:  return std::invoke(func_t<int64_t, TensorT>(), tensor, args...);
-            case data_type::Fp16:   return; // std::invoke(func_t<uint64_t, TensorT>(), tensor, args...);
-            case data_type::Fp32:   return std::invoke(func_t<float, TensorT>(), tensor, args...);
-            case data_type::Fp64:   return std::invoke(func_t<double, TensorT>(), tensor, args...);
-            case data_type::String: return std::invoke(func_t<char, TensorT>(), tensor, args...);
-            case data_type::Unknown: static_assert("Unknown DataType"); return;
+        case data_type::Bool:
+            return std::invoke(func_t<bool, TensorT>(), tensor, args...);
+        case data_type::Uint8:
+            return std::invoke(func_t<uint8_t, TensorT>(), tensor, args...);
+        case data_type::Uint16:
+            return std::invoke(func_t<uint16_t, TensorT>(), tensor, args...);
+        case data_type::Uint32:
+            return std::invoke(func_t<uint32_t, TensorT>(), tensor, args...);
+        case data_type::Uint64:
+            return std::invoke(func_t<uint64_t, TensorT>(), tensor, args...);
+        case data_type::Int8:
+            return std::invoke(func_t<int8_t, TensorT>(), tensor, args...);
+        case data_type::Int16:
+            return std::invoke(func_t<int16_t, TensorT>(), tensor, args...);
+        case data_type::Int32:
+            return std::invoke(func_t<int32_t, TensorT>(), tensor, args...);
+        case data_type::Int64:
+            return std::invoke(func_t<int64_t, TensorT>(), tensor, args...);
+        case data_type::Fp16:
+            return; // std::invoke(func_t<uint64_t, TensorT>(), tensor, args...);
+        case data_type::Fp32:
+            return std::invoke(func_t<float, TensorT>(), tensor, args...);
+        case data_type::Fp64:
+            return std::invoke(func_t<double, TensorT>(), tensor, args...);
+        case data_type::String:
+            return std::invoke(func_t<char, TensorT>(), tensor, args...);
+        case data_type::Unknown:
+            static_assert("Unknown DataType");
+            return;
         }
     }
 };

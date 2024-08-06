@@ -19,7 +19,7 @@ class TeiaCareInferenceClient(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
-    requires = "grpc/1.54.3"
+    requires = "grpc/1.65.0"
     generators = "CMakeDeps"
 
     def config_options(self):
@@ -37,7 +37,6 @@ class TeiaCareInferenceClient(ConanFile):
         tc.variables["TC_ENABLE_UNIT_TESTS_COVERAGE"] = False
         tc.variables["TC_ENABLE_BENCHMARKS"] = False
         tc.variables["TC_ENABLE_EXAMPLES"] = False
-        tc.variables["TC_ENABLE_DOCS"] = False
         tc.variables["TC_ENABLE_WARNINGS_ERROR"] = True
         tc.variables["TC_ENABLE_SANITIZER_ADDRESS"] = False
         tc.variables["TC_ENABLE_SANITIZER_THREAD"] = False
@@ -45,7 +44,6 @@ class TeiaCareInferenceClient(ConanFile):
         tc.variables["TC_ENABLE_CLANG_TIDY"] = False
         tc.variables["TC_ENABLE_CPPCHECK"] = False
         tc.variables["TC_ENABLE_CPPLINT"] = False
-        tc.variables["TC_ENABLE_DOCS"] = False
         tc.generate()
 
     def build(self):

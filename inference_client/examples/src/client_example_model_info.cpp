@@ -1,4 +1,19 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <teiacare/inference_client/client_factory.hpp>
+
 #include <spdlog/spdlog.h>
 
 int main(int argc, char** argv)
@@ -28,7 +43,7 @@ int main(int argc, char** argv)
 
         spdlog::debug("\n");
         spdlog::debug("input tensor metadata: {}", model_metadata.platform);
-        for(auto& input : model_metadata.inputs)
+        for (auto& input : model_metadata.inputs)
         {
             spdlog::debug("  name: {}", input.name);
             spdlog::debug("    datatype: {}", input.datatype);
@@ -37,7 +52,7 @@ int main(int argc, char** argv)
 
         spdlog::debug("\n");
         spdlog::debug("output tensor metadata: {}", model_metadata.platform);
-        for(auto& output : model_metadata.outputs)
+        for (auto& output : model_metadata.outputs)
         {
             spdlog::debug("  name: {}", output.name);
             spdlog::debug("    datatype: {}", output.datatype);
@@ -63,9 +78,8 @@ int main(int argc, char** argv)
         // auto is_model_unloaded = client->model_unload(model_name, model_version);
         // spdlog::debug("\n");
         // spdlog::debug("model_unload: {}", is_model_unloaded);
-
     }
-    catch(const std::runtime_error& ex)
+    catch (const std::runtime_error& ex)
     {
         spdlog::error("Error. {}", ex.what());
         return EXIT_FAILURE;

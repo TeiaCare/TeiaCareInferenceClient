@@ -1,21 +1,33 @@
-#include <stdexcept>
-#include <vector>
-#include <chrono>
-#include <iostream>
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-#include <iostream>
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include <teiacare/inference_client/client_factory.hpp>
 #include <teiacare/inference_client/infer_request.hpp>
 #include <teiacare/inference_client/infer_response.hpp>
 
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/dnn.hpp>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <filesystem>
+#include <iostream>
+#include <numeric>
+#include <opencv2/core.hpp>
+#include <opencv2/dnn.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <stdexcept>
+#include <vector>
 
 struct Detection
 {
@@ -28,11 +40,11 @@ class YOLO
 {
 public:
     YOLO(float confidence = 0.25f, float nonmaxs = 0.5f, int64_t w = 640, int64_t h = 640, int64_t c = 3)
-        : conf{ confidence }
-        , nms{ nonmaxs }
-        , width{ w }
-        , height{ h }
-        , channels{ c }
+        : conf{confidence}
+        , nms{nonmaxs}
+        , width{w}
+        , height{h}
+        , channels{c}
     {
     }
 
@@ -127,7 +139,7 @@ public:
         const float* output0 = outputs.front().data();
         const std::vector<int64_t> shape0 = shapes.front();
         const auto offset = 5;
-        const auto num_classes = shape0[2] - offset;  // 1 x 25200 x 85
+        const auto num_classes = shape0[2] - offset; // 1 x 25200 x 85
 
         std::vector<Detection> detections;
         std::vector<cv::Rect> boxes;
@@ -168,15 +180,27 @@ public:
         return detections;
     }
 
-    int64_t getW() { return width; }
-    int64_t getH() { return height; }
-    int64_t getC() { return channels; }
-    std::string get_input_layer_name() { return input_layer_name; }
+    int64_t getW()
+    {
+        return width;
+    }
+    int64_t getH()
+    {
+        return height;
+    }
+    int64_t getC()
+    {
+        return channels;
+    }
+    std::string get_input_layer_name()
+    {
+        return input_layer_name;
+    }
 
 private:
-    int64_t width{ 0 };
-    int64_t height{ 0 };
-    int64_t channels{ 0 };
+    int64_t width{0};
+    int64_t height{0};
+    int64_t channels{0};
     const float conf;
     const float nms;
     const std::string input_layer_name = "images";
@@ -218,7 +242,7 @@ int main(int argc, char** argv)
         request.model_name = "yolov5x_face_oss_res_trt";
         request.model_version = "23";
         request.id = "client_example_" + request.model_name;
-        request.add_input_tensor(input_data.data(), input_data.size(), { 1, yolo.getC(), yolo.getW(), yolo.getH() }, yolo.get_input_layer_name());
+        request.add_input_tensor(input_data.data(), input_data.size(), {1, yolo.getC(), yolo.getW(), yolo.getH()}, yolo.get_input_layer_name());
         tc::infer::infer_response response;
         try
         {
@@ -255,7 +279,7 @@ int main(int argc, char** argv)
 
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
         times.push_back(elapsed.count());
-        const std::vector<std::string> classes{ "face", "oss", "res" };
+        const std::vector<std::string> classes{"face", "oss", "res"};
         for (auto detection : detections)
         {
             cv::rectangle(img, detection.bbox, cv::Scalar(255, 0, 0));
@@ -273,7 +297,8 @@ int main(int argc, char** argv)
     auto [min, max] = std::minmax_element(times.begin(), times.end());
 
     std::cout << "=== Elapsed ===" << std::endl;
-    for (auto t : times) std::cout << t << " ";
+    for (auto t : times)
+        std::cout << t << " ";
 
     std::cout << "\n\n=== Mean ===" << std::endl;
     std::cout << mean << std::endl;

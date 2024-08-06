@@ -1,3 +1,17 @@
+// Copyright 2024 TeiaCare
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -6,21 +20,17 @@
 #include "stb_image_resize2.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
-
-#include <vector>
-#include <chrono>
-#include <iostream>
-#include <iostream>
-
 #include <teiacare/inference_client/client_factory.hpp>
 #include <teiacare/inference_client/infer_request.hpp>
 #include <teiacare/inference_client/infer_response.hpp>
 
+#include "stb_image_write.h"
+#include <chrono>
+#include <iostream>
 #include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <vector>
 
 std::vector<uint8_t> load_image(const char* image_path, int width, int height, int channels = 3)
 {
@@ -50,10 +60,10 @@ int main(int argc, char** argv)
     // stbi_write_jpg("output.jpg", width, height, channels, img.data(), 100);
 
     cv::Mat img = cv::imread(image_path, cv::IMREAD_COLOR);
-    
+
     cv::Mat sample;
     cv::cvtColor(img, sample, cv::COLOR_BGR2RGB);
-    
+
     cv::Mat sample_resized;
     cv::resize(sample, sample_resized, {224, 224});
 
@@ -64,7 +74,7 @@ int main(int argc, char** argv)
     cv::Mat sample_final;
     sample_final = sample_type.mul(cv::Scalar(1 / 127.5, 1 / 127.5, 1 / 127.5));
     sample_final = sample_final - cv::Scalar(1.0, 1.0, 1.0);
-    
+
     size_t img_byte_size = sample_final.total() * sample_final.elemSize() * sizeof(uint8_t);
     std::vector<uint8_t> input_data;
     input_data.resize(img_byte_size);
@@ -73,7 +83,7 @@ int main(int argc, char** argv)
     std::vector<cv::Mat> input_bgr_channels;
     for (size_t i = 0; i < channels; ++i)
     {
-        input_bgr_channels.emplace_back(height, width, CV_32FC1, &((input_data)[pos]) );
+        input_bgr_channels.emplace_back(height, width, CV_32FC1, &((input_data)[pos]));
         pos += input_bgr_channels.back().total() * input_bgr_channels.back().elemSize() * sizeof(uint8_t);
     }
 
@@ -91,69 +101,71 @@ int main(int argc, char** argv)
     // {
     //     auto start = std::chrono::steady_clock::now();
 
-        tc::infer::infer_request request;
-        request.model_name = "densenet_onnx";
-        request.model_version = "1";
-        request.id = "";    
-        request.add_input_tensor((std::byte*)input_data.data(), input_data.size(), { channels, width, height }, tc::infer::data_type::Fp32, "data_0");
+    tc::infer::infer_request request;
+    request.model_name = "densenet_onnx";
+    request.model_version = "1";
+    request.id = "";
+    request.add_input_tensor((std::byte*)input_data.data(), input_data.size(), {channels, width, height}, tc::infer::data_type::Fp32, "data_0");
 
-        tc::infer::infer_response response;
-        try
+    tc::infer::infer_response response;
+    try
+    {
+        response = client->infer(request, std::chrono::seconds(5));
+    }
+    catch (const tc::infer::timeout_error& ex)
+    {
+        std::cout << "[Timeout Error]\nUnable to perform inference\n"
+                  << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (const std::runtime_error& ex)
+    {
+        std::cout << "[Error]\nUnable to perform inference\n"
+                  << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "Model name: " << response.model_name << std::endl;
+    std::cout << "Model version: " << response.model_version << std::endl;
+    std::cout << "Output layers" << std::endl;
+    for (const auto& output : response.output_tensors)
+    {
+        std::cout << "- Name: " << output.name() << std::endl;
+        std::cout << "- DataType: " << output.datatype().str() << std::endl;
+        std::cout << "- Shape: ";
+        for (auto shape : output.shape())
+            std::cout << shape << " " << std::endl;
+
+        std::cout << "- Size: " << output.data_size() << std::endl;
+        std::cout << "- Output layer data: " << std::endl;
+
+        // Iterate through data pointer after type cast
+        // (the memory is owned by the infer_tensor object. There is no need to release it)
+        // const float* data = output.as<float>();
+        // for (auto i = 0; i < output.data_size(); ++i)
+        // {
+        //     std::cout << i << ": " << data[i] << std::endl;
+        // }
+
+        // Iterate data by converting them as a std::vector<T>
+        // (the memory is owned by the infer_tensor object. There is no need to release it)
+        int i1 = 0;
+        for (auto d : output.data<float>())
         {
-            response = client->infer(request, std::chrono::seconds(5));
-        }
-        catch (const tc::infer::timeout_error& ex)
-        {
-            std::cout << "[Timeout Error]\nUnable to perform inference\n" << ex.what() << std::endl;
-            return EXIT_FAILURE;
-        }
-        catch (const std::runtime_error& ex)
-        {
-            std::cout << "[Error]\nUnable to perform inference\n" << ex.what() << std::endl;
-            return EXIT_FAILURE;
+            std::cout << i1 << ": " << d << std::endl;
+            i1++;
         }
 
-        std::cout << "Model name: " << response.model_name << std::endl;
-        std::cout << "Model version: " << response.model_version << std::endl;
-        std::cout << "Output layers" << std::endl;
-        for (const auto& output : response.output_tensors)
-        {
-            std::cout << "- Name: " << output.name() << std::endl;
-            std::cout << "- DataType: " << output.datatype().str() << std::endl;
-            std::cout << "- Shape: ";
-            for (auto shape : output.shape())
-                std::cout << shape << " " << std::endl;
-            
-            std::cout << "- Size: " << output.data_size() << std::endl;
-            std::cout << "- Output layer data: " << std::endl;
-            
-            // Iterate through data pointer after type cast
-            // (the memory is owned by the infer_tensor object. There is no need to release it)
-            // const float* data = output.as<float>();
-            // for (auto i = 0; i < output.data_size(); ++i)
-            // {
-            //     std::cout << i << ": " << data[i] << std::endl;
-            // }
-
-            // Iterate data by converting them as a std::vector<T>
-            // (the memory is owned by the infer_tensor object. There is no need to release it)
-            int i1 = 0;
-            for (auto d : output.data<float>())
-            {
-                std::cout << i1 << ": " << d << std::endl;
-                i1++;
-            }
-
-            // Iterate data after a clone (deep copy)
-            // (the memory is owned by cloned object.)
-            // int i2 = 0;
-            // auto data_clone = output.clone_data<float>();
-            // for (auto d : data_clone)
-            // {
-            //     std::cout << i2 << ": " << d << std::endl;
-            //     i2++;
-            // }
-        }
+        // Iterate data after a clone (deep copy)
+        // (the memory is owned by cloned object.)
+        // int i2 = 0;
+        // auto data_clone = output.clone_data<float>();
+        // for (auto d : data_clone)
+        // {
+        //     std::cout << i2 << ": " << d << std::endl;
+        //     i2++;
+        // }
+    }
 
     //     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
     //     times.push_back(elapsed.count());
@@ -176,7 +188,7 @@ int main(int argc, char** argv)
 
     // std::cout << "\n=== Std. Deviation ===" << std::endl;
     // std::cout << stdev << std::endl;
-    
+
     // std::cout << "\n=== Minimum ===" << std::endl;
     // std::cout << *min << std::endl;
 

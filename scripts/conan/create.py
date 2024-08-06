@@ -12,10 +12,10 @@ def setup_conan_home():
 
 def parse():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("build_type", help="Debug or Release", choices=['Debug', 'Release'])
+    parser.add_argument("build_type", help="Debug or Release", choices=['Debug', 'Release', 'RelWithDebInfo'])
     parser.add_argument("compiler", help="Compiler name", choices=['gcc', 'clang', 'visual_studio'])
     parser.add_argument("compiler_version", help="Compiler version")
-    parser.add_argument("-i", "--install_dir", help="Package install directory")
+    # parser.add_argument("-i", "--install_dir", help="Package install directory")
     return parser.parse_args()
 
 def run(command):
@@ -31,13 +31,10 @@ def conan_create(conanfile_directory, profile_path, build_type):
         '--settings', f'build_type={build_type}',
         '--profile:build', f'{profile_path}',
         '--profile:host', f'{profile_path}',
-        '--build', 'missing'
+        '--build', 'missing',
+        '--test-folder', 'None' # TODO: remove this line once test_package is working properly
     ]
     run(command)
-
-def set_install_dir(install_dir):
-    os.chdir(install_dir)
-    setup_conan_home()
 
 def get_profile_path(profile_name):
     profile_path = pathlib.Path(os.getenv('CONAN_USER_HOME'), ".conan", "profiles", profile_name)
@@ -46,8 +43,6 @@ def get_profile_path(profile_name):
 def main():
     setup_conan_home()
     args = parse()
-
-    set_install_dir(args.install_dir)
 
     profile_name = f'{args.compiler+args.compiler_version}'
     profile_path = get_profile_path(profile_name)
