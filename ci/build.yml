@@ -115,7 +115,7 @@ jobs:
 
         - task: Cache@2
           inputs:
-            key: 'conan $(Agent.JobName) | inference_client/conanfile.py | inference_client/examples/conanfile.txt | inference_client/tests/conanfile.txt'
+            key: 'conan $(Agent.JobName) | inference_client/conanfile.txt | inference_client/examples/conanfile.txt | inference_client/tests/conanfile.txt'
             path: '$(Build.SourcesDirectory)/.conan'
           displayName: 'Cache Conan'
 
