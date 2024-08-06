@@ -67,11 +67,6 @@ jobs:
           source .venv/bin/activate
           python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }} -d inference_client inference_client/tests
 
-      - name: Create Unit Tests data
-        run: |
-          sudo apt-get install -y ffmpeg
-          python3 scripts/tests/generate_test_data.py
-
       - name: Run Code Coverage
         run: |
           source .venv/bin/activate
