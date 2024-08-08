@@ -7,22 +7,16 @@ Welcome to TeiaCareInferenceClient!
 
 ## Getting Started
 
-### Create a virtual environment
+### Create development environment
+In order to setup a development environment it is sufficient to run the script *scripts/env/setup.<bat|sh>* depending on your operating system.
 
 ```bash
-python -m pip install --upgrade pip
-python -m venv .venv
-
 # Linux/MacOS
-echo "export CONAN_USER_HOME=$PWD" >> .venv/bin/activate
-source .venv/bin/activate
+chmod +x scripts/env/setup.sh
+scripts/env/setup.sh
 
 # Windows
-echo set CONAN_USER_HOME=%CD%>>.venv\Scripts\activate.bat
-.venv\Scripts\activate.bat
-
-pip install -r scripts/requirements.txt
-pre-commit install
+scripts\setup\setup.bat
 ```
 
 ### Setup Build Environment (Windows Only)
