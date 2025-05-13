@@ -12,35 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <teiacare/inference_client/client_factory.hpp>
 #include <teiacare/inference_client/client_interface.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <services_mock.grpc.pb.h>
 
-class FakeClient
-{
-public:
-    explicit FakeClient(inference::GRPCInferenceService::StubInterface* stub)
-        : _stub(stub)
-    {
-    }
-
-    bool is_server_live()
-    {
-        inference::ServerLiveRequest request;
-        inference::ServerLiveResponse response;
-        grpc::ClientContext context;
-
-        const grpc::Status rpc_status = _stub->ServerLive(&context, request, &response);
-
-        return response.live();
-    }
-
-private:
-    inference::GRPCInferenceService::StubInterface* _stub;
-};
-
+/*
 TEST(FakeClient, server_live)
 {
     inference::MockGRPCInferenceServiceStub stub;
@@ -102,6 +81,17 @@ TEST(FakeClient, call_exception)
 
     FakeClient client(&stub);
     EXPECT_THROW(client.is_server_live(), std::logic_error);
+}
+*/
+
+TEST(test_inference_client, create)
+{
+    EXPECT_NO_THROW((tc::infer::create_client("localhost:8001")));
+}
+
+TEST(test_inference_client, create_stub)
+{
+    EXPECT_NO_THROW((tc::infer::create_client(nullptr)));
 }
 
 int main(int argc, char** argv)

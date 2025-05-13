@@ -16,7 +16,7 @@
 from conans import ConanFile
 
 class GRPC(ConanFile):
-    requires = "grpc/1.65.0"
+    requires = "grpc/1.68.0",
     generators = "CMakeDeps"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
@@ -39,6 +39,7 @@ class GRPC(ConanFile):
         self.options["grpc"].php_plugin=False
         self.options["grpc"].python_plugin=False
         self.options["grpc"].ruby_plugin=False
+        self.options["grpc"].otel_plugin=False
         self.options["grpc"].secure=False
 
         if self.settings.os == "Linux":

@@ -30,27 +30,22 @@
 // #include <sys/types.h>
 // #include <unistd.h>
 
+#include "grpc_client.h"
 #include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <condition_variable>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <mutex>
-#include <queue>
-#include <string>
-
-#include <vector>
-#include <chrono>
-#include <iostream>
 #include <numeric>
-#include <algorithm>
-#include <cmath>
-
-#include "grpc_client.h"
-
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <queue>
+#include <string>
+#include <vector>
 
 namespace tc = triton::client;
 
@@ -87,13 +82,13 @@ struct ModelInfo
 };
 
 void Preprocess(const cv::Mat& img,
-    const std::string& format,
-    int img_type1,
-    int img_type3,
-    size_t img_channels,
-    const cv::Size& img_size,
-    const ScaleType scale,
-    std::vector<uint8_t>* input_data)
+                const std::string& format,
+                int img_type1,
+                int img_type3,
+                size_t img_channels,
+                const cv::Size& img_size,
+                const ScaleType scale,
+                std::vector<uint8_t>* input_data)
 {
     // Image channels are in BGR order. Currently model configuration
     // data doesn't provide any information as to the expected channel
@@ -136,11 +131,11 @@ void Preprocess(const cv::Mat& img,
 }
 
 void Postprocess(const tc::InferResult* result,
-    const std::string& filename,
-    const size_t batch_size,
-    const std::string& output_name,
-    size_t topk,
-    const bool batching)
+                 const std::string& filename,
+                 const size_t batch_size,
+                 const std::string& output_name,
+                 size_t topk,
+                 const bool batching)
 {
     if (!result->RequestStatus().IsOk())
     {
@@ -233,7 +228,7 @@ void Postprocess(const tc::InferResult* result,
     size_t buffer_size;
     result->RawData(output_name, &buffer, &buffer_size);
 
-    for (int i=0; i< buffer_size; ++i)
+    for (int i = 0; i < buffer_size; ++i)
     {
         std::cout << i << ": " << *buffer << std::endl;
         ++buffer;
@@ -435,7 +430,7 @@ void FileToInputData(const std::string& filename, size_t c, size_t h, size_t w, 
     Preprocess(img, format, type1, type3, c, cv::Size(w, h), scale, input_data);
 }
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -507,56 +502,56 @@ int main(int argc, char** argv)
     // {
     //     auto start = std::chrono::steady_clock::now();
 
-        tc::InferInput* input;
-        err = tc::InferInput::Create(&input, model_info.input_name_, shape, model_info.input_datatype_);
-        if (!err.IsOk())
-        {
-            std::cerr << "unable to get input: " << err << std::endl;
-            exit(1);
-        }
-        std::shared_ptr<tc::InferInput> input_ptr(input);
+    tc::InferInput* input;
+    err = tc::InferInput::Create(&input, model_info.input_name_, shape, model_info.input_datatype_);
+    if (!err.IsOk())
+    {
+        std::cerr << "unable to get input: " << err << std::endl;
+        exit(1);
+    }
+    std::shared_ptr<tc::InferInput> input_ptr(input);
 
-        tc::InferRequestedOutput* output;
-        err = tc::InferRequestedOutput::Create(&output, model_info.output_name_, topk);
-        if (!err.IsOk())
-        {
-            std::cerr << "unable to get output: " << err << std::endl;
-            exit(1);
-        }    
-        std::shared_ptr<tc::InferRequestedOutput> output_ptr(output);
+    tc::InferRequestedOutput* output;
+    err = tc::InferRequestedOutput::Create(&output, model_info.output_name_, topk);
+    if (!err.IsOk())
+    {
+        std::cerr << "unable to get output: " << err << std::endl;
+        exit(1);
+    }
+    std::shared_ptr<tc::InferRequestedOutput> output_ptr(output);
 
-        err = input_ptr->Reset();
-        if (!err.IsOk())
-        {
-            std::cerr << "failed resetting input: " << err << std::endl;
-            exit(1);
-        }
+    err = input_ptr->Reset();
+    if (!err.IsOk())
+    {
+        std::cerr << "failed resetting input: " << err << std::endl;
+        exit(1);
+    }
 
-        err = input_ptr->AppendRaw(image_data[0]);
-        if (!err.IsOk())
-        {
-            std::cerr << "failed setting input: " << err << std::endl;
-            exit(1);
-        }
+    err = input_ptr->AppendRaw(image_data[0]);
+    if (!err.IsOk())
+    {
+        std::cerr << "failed setting input: " << err << std::endl;
+        exit(1);
+    }
 
-        tc::InferResult* result;
-        tc::InferOptions options(model_name);
-        options.model_version_ = model_version;
-        options.request_id_ = "request_densenet_onnx";
-        std::vector<tc::InferInput*> inputs = { input_ptr.get() };
-        std::vector<const tc::InferRequestedOutput*> outputs = { output_ptr.get() };
-        
-        err = grpc_client->Infer(&result, options, inputs, outputs, http_headers);
-        if (!err.IsOk())
-        {
-            std::cerr << "failed sending synchronous infer request: " << err << std::endl;
-            exit(1);
-        }
+    tc::InferResult* result;
+    tc::InferOptions options(model_name);
+    options.model_version_ = model_version;
+    options.request_id_ = "request_densenet_onnx";
+    std::vector<tc::InferInput*> inputs = {input_ptr.get()};
+    std::vector<const tc::InferRequestedOutput*> outputs = {output_ptr.get()};
+
+    err = grpc_client->Infer(&result, options, inputs, outputs, http_headers);
+    if (!err.IsOk())
+    {
+        std::cerr << "failed sending synchronous infer request: " << err << std::endl;
+        exit(1);
+    }
 
     //     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
     //     times.push_back(elapsed.count());
     // }
-    
+
     // double sum = std::accumulate(times.begin(), times.end(), 0.0);
     // double mean = sum / times.size();
 
@@ -574,7 +569,7 @@ int main(int argc, char** argv)
 
     // std::cout << "\n=== Std. Deviation ===" << std::endl;
     // std::cout << stdev << std::endl;
-    
+
     // std::cout << "\n=== Minimum ===" << std::endl;
     // std::cout << *min << std::endl;
 

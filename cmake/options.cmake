@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CONAN_CMAKE_SILENT_OUTPUT ON)
 
-option(TC_ENABLE_UNIT_TESTS "Enable Unit Tests" False)
+option(TC_ENABLE_UNIT_TESTS "Enable Unit Tests" True)
 cmake_print_variables(TC_ENABLE_UNIT_TESTS)
 
 option(TC_ENABLE_UNIT_TESTS_COVERAGE "Enable Unit Tests Coverage" False)
@@ -17,7 +17,7 @@ cmake_print_variables(TC_ENABLE_BENCHMARKS)
 option(TC_ENABLE_EXAMPLES "Enable Examples" True)
 cmake_print_variables(TC_ENABLE_EXAMPLES)
 
-option(TC_ENABLE_WARNINGS_ERROR "Enable treat Warnings as Errors" False)
+option(TC_ENABLE_WARNINGS_ERROR "Enable treat Warnings as Errors" True)
 cmake_print_variables(TC_ENABLE_WARNINGS_ERROR)
 
 option(TC_ENABLE_SANITIZER_ADDRESS "Enable Address and Leak Sanitizers" False)

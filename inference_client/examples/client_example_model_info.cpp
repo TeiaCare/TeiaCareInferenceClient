@@ -16,13 +16,13 @@
 
 #include <spdlog/spdlog.h>
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
     spdlog::set_level(spdlog::level::level_enum::trace);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
     spdlog::info("Running client_example_model_info");
 
-    auto client = tc::infer::client_factory::create_client("localhost:8001");
+    auto client = tc::infer::create_client("localhost:8001");
 
     auto model_name = "simple_int32";
     auto model_version = "1";

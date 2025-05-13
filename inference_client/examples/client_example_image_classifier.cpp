@@ -94,7 +94,7 @@ int main(int argc, char** argv)
         throw std::runtime_error("Invalid image size");
     }
 
-    auto client = tc::infer::client_factory::create_client("localhost:8001");
+    auto client = tc::infer::create_client("localhost:8001");
 
     // std::vector<int64_t> times;
     // for(int i = 0; i < 100; ++i)

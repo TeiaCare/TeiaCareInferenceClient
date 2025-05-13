@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
     spdlog::info("Running client_example_simple_inference");
 
-    auto client = tc::infer::client_factory::create_client("localhost:8001");
+    auto client = tc::infer::create_client("localhost:8001");
 
     {
         std::vector<int32_t> data_0{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};

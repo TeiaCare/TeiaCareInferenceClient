@@ -59,44 +59,50 @@ if(TC_ENABLE_WARNINGS_ERROR)
     add_warnings_as_errors(${TARGET_NAME})
 endif()
 
-if(TC_ENABLE_SANITIZER_ADDRESS)
-    include(sanitizer_address)
-    add_sanitizer_address(${TARGET_NAME})
-endif()
-
-if(TC_ENABLE_SANITIZER_THREAD)
-    include(sanitizer_thread)
-    add_sanitizer_thread(${TARGET_NAME})
-endif()
-
-if(TC_ENABLE_CLANG_FORMAT)
-    include(clang_format)
-    setup_target_clang_format(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-if(TC_ENABLE_CLANG_TIDY)
-    include(clang_tidy)
-    setup_target_clang_tidy(${TARGET_NAME})
-endif()
-
-if(TC_ENABLE_CPPCHECK)
-    include(cppcheck)
-    setup_target_cppcheck(${TARGET_NAME})
-endif()
-
-if(TC_ENABLE_CPPLINT)
-    include(cpplint)
-    setup_target_cpplint(${TARGET_NAME} ${TARGET_SRC})
-endif()
-
+#################################################################
+# Unit Tests
 if(TC_ENABLE_UNIT_TESTS)
-    add_subdirectory(tests)
+    set(TEST_TARGET_NAME teiacare_inference_client_unittests)
+    find_package(GTest REQUIRED)
+    include(GoogleTest)
+
+    set(UNIT_TESTS_SRC
+        tests/main.cpp
+        tests/test_client_factory.cpp
+    )
+
+    add_executable(${TEST_TARGET_NAME})
+    target_sources(${TEST_TARGET_NAME} PRIVATE ${UNIT_TESTS_SRC})
+    target_include_directories(${TEST_TARGET_NAME} PRIVATE  ${CMAKE_CURRENT_BINARY_DIR}/proto)
+    target_compile_features(${TEST_TARGET_NAME} PUBLIC cxx_std_20)
+    target_link_libraries(${TEST_TARGET_NAME}
+        PRIVATE
+            GTest::gtest
+            GTest::gmock
+            teiacare::inference_client
+            gRPC::grpc++
+    )
+
+    gtest_discover_tests(${TEST_TARGET_NAME})
+    install(TARGETS ${TEST_TARGET_NAME} DESTINATION unit_tests)
+
+    if(TC_ENABLE_WARNINGS_ERROR)
+        add_warnings(${TEST_TARGET_NAME})
+        add_warnings_as_errors(${TEST_TARGET_NAME})
+    endif()
+
+    if(TC_ENABLE_UNIT_TESTS_COVERAGE)
+        include(coverage)
+        add_coverage(${TARGET_NAME})
+    endif()
 endif()
 
-if(TC_ENABLE_BENCHMARKS)
-    add_subdirectory(benchmarks)
-endif()
-
+#################################################################
+# Examples
 if(TC_ENABLE_EXAMPLES)
-    add_subdirectory(examples)
+include(examples)
+    # add_example(teiacare::inference_client client_example_image_classifier)
+    add_example(teiacare::inference_client client_example_model_info)
+    add_example(teiacare::inference_client client_example_server_info)
+    add_example(teiacare::inference_client client_example_simple_inference)
 endif()

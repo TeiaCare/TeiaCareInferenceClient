@@ -14,4 +14,6 @@
 **/launch.dev.json
 **/compile_commands.json
 **/CMakeUserPresets.json
-inference_client/src/version.cpp
+**/src/version.cpp
+**/images
+**/models

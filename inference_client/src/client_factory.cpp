@@ -26,6 +26,12 @@ std::unique_ptr<client_interface> create_client(const std::string& uri, std::chr
     return std::make_unique<tc::infer::grpc_client>(std::move(stub), rpc_timeout);
 }
 
+std::unique_ptr<client_interface> create_client(void* rpc_stub, std::chrono::milliseconds rpc_timeout)
+{
+    std::unique_ptr<inference::GRPCInferenceService::StubInterface> stub = std::unique_ptr<inference::GRPCInferenceService::StubInterface>(reinterpret_cast<inference::GRPCInferenceService::StubInterface*>(rpc_stub));
+    return std::make_unique<tc::infer::grpc_client>(std::move(stub), rpc_timeout);
+}
+
 // #if defined(UNIT_TESTS)
 // std::unique_ptr<client_interface> create_client(std::unique_ptr<inference::GRPCInferenceService::StubInterface> rpc_stub, std::chrono::milliseconds rpc_timeout)
 // {
