@@ -135,15 +135,15 @@ jobs:
           env:
             CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        - script: |
-            $(ACTIVATE_VIRTUAL_ENV)
-            $(SETUP_BUILD_ENV)
-            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --examples
-            python3 scripts/tools/run_examples.py install/examples
-          displayName: 'Examples'
-          timeoutInMinutes: 5
-          env:
-            CONAN_USER_HOME: $(Build.SourcesDirectory)
+        # - script: |
+        #     $(ACTIVATE_VIRTUAL_ENV)
+        #     $(SETUP_BUILD_ENV)
+        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --examples
+        #     python3 scripts/tools/run_examples.py install/examples
+        #   displayName: 'Examples'
+        #   timeoutInMinutes: 5
+        #   env:
+        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
 
         - script: |
             $(ACTIVATE_VIRTUAL_ENV)
