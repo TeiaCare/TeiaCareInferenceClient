@@ -58,10 +58,8 @@ TEST_F(ClientFactoryTest, CreateClientFromUri)
     // Ideally, this would be mocked or tested in integration tests
     std::unique_ptr<tc::infer::client_interface> client = create_client(test_uri, timeout);
 
-    client->
-
-        // Verify the client was created successfully
-        ASSERT_NE(client, nullptr);
+    // Verify the client was created successfully
+    ASSERT_NE(client, nullptr);
 }
 
 // If you want to test the commented-out function for UNIT_TESTS, you could add something like:
