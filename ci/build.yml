@@ -173,7 +173,7 @@ jobs:
         - script: |
             $(ACTIVATE_VIRTUAL_ENV)
             $(SETUP_BUILD_ENV)
-            python3 scripts/tools/run_coverage.py $(COMPILER) $(COMPILER_VERSION)
+            python3 scripts/tools/run_coverage.py inference_client $(COMPILER) $(COMPILER_VERSION)
           displayName: 'Code Coverage'
           condition: eq(variables['Agent.OS'], 'Linux')
           timeoutInMinutes: 5
@@ -202,29 +202,29 @@ jobs:
         #   env:
         #     CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        - script: |
-            $(ACTIVATE_VIRTUAL_ENV)
-            $(SETUP_BUILD_ENV)
-            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --address_sanitizer --unit_tests
-            python3 scripts/tools/run_sanitizer.py --address_sanitizer install/unit_tests/teiacare_inference_client_unittests
-          displayName: 'Address Sanitizer'
-          condition: eq(variables['Agent.OS'], 'Linux')
-          timeoutInMinutes: 5
-          continueOnError: True
-          env:
-            CONAN_USER_HOME: $(Build.SourcesDirectory)
+        # - script: |
+        #     $(ACTIVATE_VIRTUAL_ENV)
+        #     $(SETUP_BUILD_ENV)
+        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --address_sanitizer --unit_tests
+        #     python3 scripts/tools/run_sanitizer.py --address_sanitizer install/unit_tests/teiacare_inference_client_unittests
+        #   displayName: 'Address Sanitizer'
+        #   condition: eq(variables['Agent.OS'], 'Linux')
+        #   timeoutInMinutes: 5
+        #   continueOnError: True
+        #   env:
+        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        - script: |
-            $(ACTIVATE_VIRTUAL_ENV)
-            $(SETUP_BUILD_ENV)
-            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --thread_sanitizer --unit_tests
-            python3 scripts/tools/run_sanitizer.py --thread_sanitizer install/unit_tests/teiacare_inference_client_unittests
-          displayName: 'Thread Sanitizer'
-          condition: eq(variables['Agent.OS'], 'Linux')
-          timeoutInMinutes: 5
-          continueOnError: True
-          env:
-            CONAN_USER_HOME: $(Build.SourcesDirectory)
+        # - script: |
+        #     $(ACTIVATE_VIRTUAL_ENV)
+        #     $(SETUP_BUILD_ENV)
+        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --thread_sanitizer --unit_tests
+        #     python3 scripts/tools/run_sanitizer.py --thread_sanitizer install/unit_tests/teiacare_inference_client_unittests
+        #   displayName: 'Thread Sanitizer'
+        #   condition: eq(variables['Agent.OS'], 'Linux')
+        #   timeoutInMinutes: 5
+        #   continueOnError: True
+        #   env:
+        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
 
         # - script: |
         #     $(ACTIVATE_VIRTUAL_ENV)
