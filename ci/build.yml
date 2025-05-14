@@ -92,6 +92,9 @@ jobs:
         vmImage: $(AGENT)
 
       steps:
+        - checkout: self
+          submodules: true
+
         - task: UsePythonVersion@0
           displayName: Set Python version (3.10)
           inputs:
@@ -108,7 +111,7 @@ jobs:
 
         - task: Cache@2
           inputs:
-            key: '$(Agent.JobName) | inference_client/conanfile.py'
+            key: '$(Agent.JobName) | inference_client/conanfile.txt'
             path: '$(Build.SourcesDirectory)/.conan'
           displayName: 'Cache Conan'
 
@@ -132,68 +135,66 @@ jobs:
           env:
             CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        # - script: |
-        #     $(ACTIVATE_VIRTUAL_ENV)
-        #     $(SETUP_BUILD_ENV)
-        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --examples
-        #     python3 scripts/tools/run_examples.py install/examples
-        #   displayName: 'Examples'
-        #   timeoutInMinutes: 5
-        #   env:
-        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
+        - script: |
+            $(ACTIVATE_VIRTUAL_ENV)
+            $(SETUP_BUILD_ENV)
+            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --examples
+            python3 scripts/tools/run_examples.py install/examples
+          displayName: 'Examples'
+          timeoutInMinutes: 5
+          env:
+            CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        # - script: |
-        #     $(ACTIVATE_VIRTUAL_ENV)
-        #     $(SETUP_BUILD_ENV)
-        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --coverage
-        #     python3 scripts/tools/run_unit_tests.py ${{BUILD_TYPE}}
-        #   displayName: 'Unit Tests'
-        #   timeoutInMinutes: 5
-        #   continueOnError: True
-        #   env:
-        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
+        - script: |
+            $(ACTIVATE_VIRTUAL_ENV)
+            $(SETUP_BUILD_ENV)
+            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --warnings --coverage
+            python3 scripts/tools/run_unit_tests.py ${{BUILD_TYPE}}
+          displayName: 'Unit Tests'
+          timeoutInMinutes: 5
+          continueOnError: True
+          env:
+            CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        # - task: PublishTestResults@2
-        #   displayName: 'Publish Unit Tests Results'
-        #   inputs:
-        #     testResultsFormat: 'JUnit'
-        #     testResultsFiles: 'results/unit_tests/unit_tests.xml'
-        #     searchFolder: '$(Build.SourcesDirectory)'
-        #     failTaskOnFailedTests: true
-        #     failTaskOnFailureToPublishResults: false
-        #     failTaskOnMissingResultsFile: true
-        #     testRunTitle: '$(Agent.JobName) ${{BUILD_TYPE}}'
-        #     buildPlatform: $(Agent.OS)
-        #     buildConfiguration: ${{BUILD_TYPE}}
+        - task: PublishTestResults@2
+          displayName: 'Publish Unit Tests Results'
+          continueOnError: True
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'results/unit_tests/unit_tests.xml'
+            searchFolder: '$(Build.SourcesDirectory)'
+            failTaskOnFailedTests: true
+            failTaskOnFailureToPublishResults: false
+            failTaskOnMissingResultsFile: true
+            testRunTitle: '$(Agent.JobName) ${{BUILD_TYPE}}'
+            buildPlatform: $(Agent.OS)
+            buildConfiguration: ${{BUILD_TYPE}}
 
-        # - script: |
-        #     $(ACTIVATE_VIRTUAL_ENV)
-        #     $(SETUP_BUILD_ENV)
-        #     python3 scripts/tools/run_coverage.py $(COMPILER) $(COMPILER_VERSION)
-        #   displayName: 'Code Coverage'
-        #   condition: eq(variables['Agent.OS'], 'Linux')
-        #   timeoutInMinutes: 5
-        #   env:
-        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
+        - script: |
+            $(ACTIVATE_VIRTUAL_ENV)
+            $(SETUP_BUILD_ENV)
+            python3 scripts/tools/run_coverage.py $(COMPILER) $(COMPILER_VERSION)
+          displayName: 'Code Coverage'
+          condition: eq(variables['Agent.OS'], 'Linux')
+          timeoutInMinutes: 5
+          env:
+            CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        # - task: PublishCodeCoverageResults@1
-        #   displayName: 'Publish Code Coverage Results'
-        #   condition: eq(variables['Agent.OS'], 'Linux')
-        #   inputs:
-        #     codeCoverageTool: 'Cobertura'
-        #     summaryFileLocation: '$(Build.SourcesDirectory)/results/coverage/cobertura.xml'
-        #     additionalCodeCoverageFiles: '$(Build.SourcesDirectory)/VERSION'
-        #     pathToSources: '$(Build.SourcesDirectory)'
-
-        # # This step is disabled since there are issues with Valgrind-3.18 (which is default on Ubuntu 22.04 agents)
-        # # I have tested this locally with a manually built Valgrind-3.20 and it works without issues.
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Publish Code Coverage Results'
+          condition: eq(variables['Agent.OS'], 'Linux')
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: '$(Build.SourcesDirectory)/results/coverage/cobertura.xml'
+            additionalCodeCoverageFiles: '$(Build.SourcesDirectory)/VERSION'
+            pathToSources: '$(Build.SourcesDirectory)'
 
         # - script: |
         #     $(ACTIVATE_VIRTUAL_ENV)
         #     $(SETUP_BUILD_ENV)
         #     sudo apt-get install valgrind
         #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --unit_tests
-        #     python scripts/tools/run_valgrind.py --memcheck install/unit_tests/teiacare_inference_client_unit_tests
+        #     python scripts/tools/run_valgrind.py --memcheck install/unit_tests/teiacare_inference_client_unittests
         #   displayName: 'Valgrind'
         #   condition: eq(variables['Agent.OS'], 'Linux')
         #   timeoutInMinutes: 5
@@ -201,39 +202,44 @@ jobs:
         #   env:
         #     CONAN_USER_HOME: $(Build.SourcesDirectory)
 
-        # - script: |
-        #     $(ACTIVATE_VIRTUAL_ENV)
-        #     $(SETUP_BUILD_ENV)
-        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --address_sanitizer --unit_tests
-        #     python3 scripts/tools/run_sanitizer.py --address_sanitizer install/unit_tests/teiacare_inference_client_unit_tests
-        #   displayName: 'Address Sanitizer'
-        #   condition: eq(variables['Agent.OS'], 'Linux')
-        #   timeoutInMinutes: 5
-        #   continueOnError: True
-        #   env:
-        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
+        - script: |
+            $(ACTIVATE_VIRTUAL_ENV)
+            $(SETUP_BUILD_ENV)
+            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --address_sanitizer --unit_tests
+            python3 scripts/tools/run_sanitizer.py --address_sanitizer install/unit_tests/teiacare_inference_client_unittests
+          displayName: 'Address Sanitizer'
+          condition: eq(variables['Agent.OS'], 'Linux')
+          timeoutInMinutes: 5
+          continueOnError: True
+          env:
+            CONAN_USER_HOME: $(Build.SourcesDirectory)
+
+        - script: |
+            $(ACTIVATE_VIRTUAL_ENV)
+            $(SETUP_BUILD_ENV)
+            python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --thread_sanitizer --unit_tests
+            python3 scripts/tools/run_sanitizer.py --thread_sanitizer install/unit_tests/teiacare_inference_client_unittests
+          displayName: 'Thread Sanitizer'
+          condition: eq(variables['Agent.OS'], 'Linux')
+          timeoutInMinutes: 5
+          continueOnError: True
+          env:
+            CONAN_USER_HOME: $(Build.SourcesDirectory)
 
         # - script: |
         #     $(ACTIVATE_VIRTUAL_ENV)
         #     $(SETUP_BUILD_ENV)
-        #     python3 scripts/cmake.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION) --thread_sanitizer --unit_tests
-        #     python3 scripts/tools/run_sanitizer.py --thread_sanitizer install/unit_tests/teiacare_inference_client_unit_tests
-        #   displayName: 'Thread Sanitizer'
-        #   condition: eq(variables['Agent.OS'], 'Linux')
-        #   timeoutInMinutes: 5
-        #   continueOnError: True
-        #   env:
-        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
-
-        # - script: |
-        #     $(ACTIVATE_VIRTUAL_ENV)
-        #     $(SETUP_BUILD_ENV)
-        #     conan config set general.revisions_enabled=0
-        #     conan remote add teiacare $(artifactory.url)/teiacare
-        #     conan user $(artifactory.username) -p $(artifactory.password) -r teiacare
         #     python3 scripts/conan/create.py ${{BUILD_TYPE}} $(COMPILER) $(COMPILER_VERSION)
-        #     python3 scripts/conan/upload.py teiacare teiacare_inference_client
         #   displayName: 'Create Conan Package'
+        #   timeoutInMinutes: 5
+        #   env:
+        #     CONAN_USER_HOME: $(Build.SourcesDirectory)
+
+        # - script: |
+        #     $(ACTIVATE_VIRTUAL_ENV)
+        #     $(SETUP_BUILD_ENV)
+        #     python3 scripts/conan/upload.py teiacare teiacare_inference_client $(artifactory.url) $(artifactory.username) $(artifactory.password)
+        #   displayName: 'Upload Conan Package'
         #   timeoutInMinutes: 5
         #   env:
         #     CONAN_USER_HOME: $(Build.SourcesDirectory)
