@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         build_type: ['Debug', 'Release', 'RelWithDebInfo']
-        include:
+        config:
           - name: windows2022_msvc2022
             os: windows-2022
             compiler: visual_studio
@@ -46,8 +46,8 @@ jobs:
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.name }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.name }} ${{ matrix.build_type }}
 
     steps:
       - name: Checkout repository
@@ -66,39 +66,43 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-${{ matrix.name }}-venv-${{ hashFiles('scripts/requirements.txt') }}
+          key: ${{ runner.os }}-${{ matrix.config.name }}-venv-${{ hashFiles('scripts/requirements.txt') }}
 
       - name: Cache Conan
         uses: actions/cache@v4
         with:
           path: .conan
-          key: ${{ runner.os }}-${{ matrix.name }}-conan-${{ hashFiles('inference_client/conanfile.txt') }}
+          key: ${{ runner.os }}-${{ matrix.config.name }}-conan-${{ hashFiles('inference_client/conanfile.txt') }}
 
       - name: Setup Virtual Environment
         if: steps.cache-venv.outputs.cache-hit != 'true'
+        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
         run: |
           python3 -m venv .venv
-          ${{ matrix.activate_venv }}
+          ${{ matrix.config.activate_venv }}
           pip3 install -r scripts/requirements.txt
 
       - name: Setup Conan
+        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
         run: |
-          ${{ matrix.activate_venv }}
-          python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }}
+          ${{ matrix.config.activate_venv }}
+          python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
+        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
         run: |
-          ${{ matrix.activate_venv }}
-          ${{ matrix.setup_build_env }}
-          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }} --warnings
+          ${{ matrix.config.activate_venv }}
+          ${{ matrix.config.setup_build_env }}
+          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
 
       - name: Unit Tests
+        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
         run: |
-          ${{ matrix.activate_venv }}
-          ${{ matrix.setup_build_env }}
-          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }} --warnings --coverage
+          ${{ matrix.config.activate_venv }}
+          ${{ matrix.config.setup_build_env }}
+          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings --coverage
           python3 scripts/tools/run_unit_tests.py ${{ matrix.build_type }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
@@ -111,14 +115,15 @@ jobs:
         with:
           files: results/unit_tests/unit_tests.xml
           fail_on: 'test failures'
-          check_name: "Unit Tests Results - ${{ matrix.name }} ${{ matrix.build_type }}"
+          check_name: "Unit Tests Results - ${{ matrix.config.name }} ${{ matrix.build_type }}"
 
       - name: Code Coverage
         if: runner.os == 'Linux'
+        shell: bash
         run: |
-          ${{ matrix.activate_venv }}
-          ${{ matrix.setup_build_env }}
-          python3 scripts/tools/run_coverage.py inference_client ${{ matrix.compiler }} ${{ matrix.compiler_version }}
+          ${{ matrix.config.activate_venv }}
+          ${{ matrix.config.setup_build_env }}
+          python3 scripts/tools/run_coverage.py inference_client ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
         timeout-minutes: 5
