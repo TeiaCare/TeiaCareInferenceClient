@@ -84,15 +84,19 @@ jobs:
 
       - name: Setup Virtual Environment
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: |
-          python3 -m venv .venv
-          ${{ matrix.config.activate_venv }}
-          pip3 install -r scripts/requirements.txt
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            python3 -m venv .venv
+            ${{ matrix.config.activate_venv }}
+            pip3 install -r scripts/requirements.txt
 
       - name: Setup Conan
-        run: |
-          ${{ matrix.config.activate_venv }}
-          python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            ${{ matrix.config.activate_venv }}
+            python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
         uses: ./.github/actions/shell
@@ -127,10 +131,12 @@ jobs:
 
       - name: Code Coverage
         if: contains(matrix.config.os, 'ubuntu')
-        run: |
-          ${{ matrix.config.activate_venv }}
-          ${{ matrix.config.setup_build_env }}
-          python3 scripts/tools/run_coverage.py inference_client ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            ${{ matrix.config.activate_venv }}
+            ${{ matrix.config.setup_build_env }}
+            python3 scripts/tools/run_coverage.py inference_client ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
         timeout-minutes: 5
