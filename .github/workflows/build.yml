@@ -17,6 +17,7 @@ jobs:
             compiler_version: 17
             setup_build_env: 'call "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
             activate_venv: 'call ".venv\\Scripts\\activate.bat"'
+            shell: cmd
 
           - name: windows2019_msvc2019
             os: windows-2019
@@ -24,6 +25,7 @@ jobs:
             compiler_version: 16
             setup_build_env: 'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
             activate_venv: 'call ".venv\\Scripts\\activate.bat"'
+            shell: cmd
 
           - name: macos14_clang15
             os: macos-14
@@ -31,6 +33,7 @@ jobs:
             compiler_version: 15
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
+            shell: bash
 
           - name: ubuntu2204_gcc12
             os: ubuntu-22.04
@@ -38,6 +41,7 @@ jobs:
             compiler_version: 12
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
+            shell: bash
 
           - name: ubuntu2204_clang15
             os: ubuntu-22.04
@@ -45,6 +49,7 @@ jobs:
             compiler_version: 15
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
+            shell: bash
 
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.name }} ${{ matrix.build_type }}
@@ -76,20 +81,20 @@ jobs:
 
       - name: Setup Virtual Environment
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
+        shell: ${{ matrix.config.shell }}
         run: |
           python3 -m venv .venv
           ${{ matrix.config.activate_venv }}
           pip3 install -r scripts/requirements.txt
 
       - name: Setup Conan
-        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
+        shell: ${{ matrix.config.shell }}
         run: |
           ${{ matrix.config.activate_venv }}
           python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
-        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
+        shell: ${{ matrix.config.shell }}
         run: |
           ${{ matrix.config.activate_venv }}
           ${{ matrix.config.setup_build_env }}
@@ -98,7 +103,7 @@ jobs:
           CONAN_USER_HOME: ${{ github.workspace }}
 
       - name: Unit Tests
-        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
+        shell: ${{ matrix.config.shell }}
         run: |
           ${{ matrix.config.activate_venv }}
           ${{ matrix.config.setup_build_env }}
@@ -118,7 +123,7 @@ jobs:
           check_name: "Unit Tests Results - ${{ matrix.config.name }} ${{ matrix.build_type }}"
 
       - name: Code Coverage
-        if: runner.os == 'Linux'
+        if: contains(matrix.config.os, 'ubuntu')
         shell: bash
         run: |
           ${{ matrix.config.activate_venv }}
@@ -129,7 +134,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Upload coverage reports to Codecov
-        if: runner.os == 'Linux'
+        if: contains(matrix.config.os, 'ubuntu')
         uses: codecov/codecov-action@v4
         with:
           file: results/coverage/cobertura.xml
