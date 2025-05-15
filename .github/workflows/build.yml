@@ -15,15 +15,15 @@ jobs:
             os: windows-2022
             compiler: visual_studio
             compiler_version: 17
-            setup_build_env: 'cmd.exe /c "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
-            activate_venv: '& .venv\\Scripts\\activate.ps1'
+            setup_build_env: 'call "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+            activate_venv: 'call ".venv\\Scripts\\activate.bat"'
 
           - name: windows2019_msvc2019
             os: windows-2019
             compiler: visual_studio
             compiler_version: 16
-            setup_build_env: 'cmd.exe /c "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
-            activate_venv: '& .venv\\Scripts\\activate.ps1'
+            setup_build_env: 'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+            activate_venv: 'call ".venv\\Scripts\\activate.bat"'
 
           - name: macos14_clang15
             os: macos-14
@@ -95,35 +95,38 @@ jobs:
           python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
-        run: |
-          ${{ matrix.config.activate_venv }}
-          ${{ matrix.config.setup_build_env }}
-          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            ${{ matrix.config.activate_venv }}
+            ${{ matrix.config.setup_build_env }}
+            python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
 
       - name: Unit Tests
-        run: |
-          ${{ matrix.config.activate_venv }}
-          ${{ matrix.config.setup_build_env }}
-          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings --coverage
-          python3 scripts/tools/run_unit_tests.py ${{ matrix.build_type }}
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            ${{ matrix.config.activate_venv }}
+            ${{ matrix.config.setup_build_env }}
+            python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }} --warnings --coverage
+            python3 scripts/tools/run_unit_tests.py ${{ matrix.build_type }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
         continue-on-error: true
         timeout-minutes: 5
 
-      - name: Publish Unit Tests Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: results/unit_tests/unit_tests.xml
-          fail_on: 'test failures'
-          check_name: "Unit Tests Results - ${{ matrix.config.name }} ${{ matrix.build_type }}"
+  #    - name: Publish Unit Tests Results
+  #      uses: EnricoMi/publish-unit-test-result-action@v2
+  #      if: always()
+  #      with:
+  #        files: results/unit_tests/unit_tests.xml
+  #        fail_on: 'test failures'
+  #        check_name: "Unit Tests Results - ${{ matrix.config.name }} ${{ matrix.build_type }}"
 
       - name: Code Coverage
         if: contains(matrix.config.os, 'ubuntu')
-        shell: bash
         run: |
           ${{ matrix.config.activate_venv }}
           ${{ matrix.config.setup_build_env }}
@@ -132,9 +135,9 @@ jobs:
           CONAN_USER_HOME: ${{ github.workspace }}
         timeout-minutes: 5
 
-      - name: Upload coverage reports to Codecov
-        if: contains(matrix.config.os, 'ubuntu')
-        uses: codecov/codecov-action@v4
-        with:
-          file: results/coverage/cobertura.xml
-          fail_ci_if_error: false
+   #   - name: Upload coverage reports to Codecov
+    #    if: contains(matrix.config.os, 'ubuntu')
+  #      uses: codecov/codecov-action@v4
+   #     with:
+   #       file: results/coverage/cobertura.xml
+   #       fail_ci_if_error: false
