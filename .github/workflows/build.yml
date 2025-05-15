@@ -29,21 +29,21 @@ jobs:
             os: macos-14
             compiler: clang
             compiler_version: 15
-            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
           - name: ubuntu2204_gcc12
             os: ubuntu-22.04
             compiler: gcc
             compiler_version: 12
-            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
           - name: ubuntu2204_clang15
             os: ubuntu-22.04
             compiler: clang
             compiler_version: 15
-            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
     runs-on: ${{ matrix.os }}
