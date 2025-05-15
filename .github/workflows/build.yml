@@ -3,16 +3,6 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches:
-      - develop
-      - 'feature/**'
-      - 'release/**'
-      - 'hotfix/**'
-      # - 'master'
-    tags:
-      - 'v*'
-  schedule:
-    - cron: '0 1 * * 0'  # Run at 1 AM on Sunday
 
 jobs:
   build:
