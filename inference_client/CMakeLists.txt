@@ -59,6 +59,16 @@ if(TC_ENABLE_WARNINGS_ERROR)
     add_warnings_as_errors(${TARGET_NAME})
 endif()
 
+if(TC_ENABLE_SANITIZER_ADDRESS)
+    include(sanitizer_address)
+    add_sanitizer_address(${TARGET_NAME})
+endif()
+
+if(TC_ENABLE_SANITIZER_THREAD)
+    include(sanitizer_thread)
+    add_sanitizer_thread(${TARGET_NAME})
+endif()
+
 #################################################################
 # Unit Tests
 if(TC_ENABLE_UNIT_TESTS)

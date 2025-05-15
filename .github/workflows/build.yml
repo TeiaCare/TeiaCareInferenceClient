@@ -1,0 +1,141 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/**'
+      - 'release/**'
+      - 'hotfix/**'
+    tags:
+      - 'v*'
+    branches-ignore:
+      - master
+  schedule:
+    - cron: '0 1 * * 0'  # Run at 1 AM on Sunday
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: ['Debug', 'Release', 'RelWithDebInfo']
+        include:
+          - name: windows2022_msvc2022
+            os: windows-2022
+            compiler: visual_studio
+            compiler_version: 17
+            setup_build_env: 'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            activate_venv: 'call ".venv\Scripts\activate.bat"'
+
+          - name: windows2019_msvc2019
+            os: windows-2019
+            compiler: visual_studio
+            compiler_version: 16
+            setup_build_env: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            activate_venv: 'call ".venv\Scripts\activate.bat"'
+
+          - name: macos14_clang15
+            os: macos-14
+            compiler: clang
+            compiler_version: 15
+            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            activate_venv: 'source .venv/bin/activate'
+
+          - name: ubuntu2204_gcc12
+            os: ubuntu-22.04
+            compiler: gcc
+            compiler_version: 12
+            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            activate_venv: 'source .venv/bin/activate'
+
+          - name: ubuntu2204_clang15
+            os: ubuntu-22.04
+            compiler: clang
+            compiler_version: 15
+            setup_build_env: 'echo ${{ matrix.compiler }} ${{ matrix.compiler_version }}'
+            activate_venv: 'source .venv/bin/activate'
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }} ${{ matrix.build_type }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+
+      - name: Cache Virtual Environment
+        uses: actions/cache@v4
+        id: cache-venv
+        with:
+          path: .venv
+          key: ${{ runner.os }}-${{ matrix.name }}-venv-${{ hashFiles('scripts/requirements.txt') }}
+
+      - name: Cache Conan
+        uses: actions/cache@v4
+        with:
+          path: .conan
+          key: ${{ runner.os }}-${{ matrix.name }}-conan-${{ hashFiles('inference_client/conanfile.txt') }}
+
+      - name: Setup Virtual Environment
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python3 -m venv .venv
+          ${{ matrix.activate_venv }}
+          pip3 install -r scripts/requirements.txt
+
+      - name: Setup Conan
+        run: |
+          ${{ matrix.activate_venv }}
+          python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }}
+
+      - name: Build
+        run: |
+          ${{ matrix.activate_venv }}
+          ${{ matrix.setup_build_env }}
+          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }} --warnings
+        env:
+          CONAN_USER_HOME: ${{ github.workspace }}
+
+      - name: Unit Tests
+        run: |
+          ${{ matrix.activate_venv }}
+          ${{ matrix.setup_build_env }}
+          python3 scripts/cmake.py ${{ matrix.build_type }} ${{ matrix.compiler }} ${{ matrix.compiler_version }} --warnings --coverage
+          python3 scripts/tools/run_unit_tests.py ${{ matrix.build_type }}
+        env:
+          CONAN_USER_HOME: ${{ github.workspace }}
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Publish Unit Tests Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: results/unit_tests/unit_tests.xml
+          fail_on: 'test failures'
+          check_name: "Unit Tests Results - ${{ matrix.name }} ${{ matrix.build_type }}"
+
+      - name: Code Coverage
+        if: runner.os == 'Linux'
+        run: |
+          ${{ matrix.activate_venv }}
+          ${{ matrix.setup_build_env }}
+          python3 scripts/tools/run_coverage.py inference_client ${{ matrix.compiler }} ${{ matrix.compiler_version }}
+        env:
+          CONAN_USER_HOME: ${{ github.workspace }}
+        timeout-minutes: 5
+
+      - name: Upload coverage reports to Codecov
+        if: runner.os == 'Linux'
+        uses: codecov/codecov-action@v4
+        with:
+          file: results/coverage/cobertura.xml
+          fail_ci_if_error: false
