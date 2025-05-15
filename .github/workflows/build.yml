@@ -76,20 +76,20 @@ jobs:
 
       - name: Setup Virtual Environment
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
         run: |
           python3 -m venv .venv
           ${{ matrix.config.activate_venv }}
           pip3 install -r scripts/requirements.txt
 
       - name: Setup Conan
-        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
         run: |
           ${{ matrix.config.activate_venv }}
           python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
-        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
         run: |
           ${{ matrix.config.activate_venv }}
           ${{ matrix.config.setup_build_env }}
@@ -98,7 +98,7 @@ jobs:
           CONAN_USER_HOME: ${{ github.workspace }}
 
       - name: Unit Tests
-        shell: ${{ startsWith(matrix.config.os, 'windows') && 'cmd' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
         run: |
           ${{ matrix.config.activate_venv }}
           ${{ matrix.config.setup_build_env }}
