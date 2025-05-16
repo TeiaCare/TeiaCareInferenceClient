@@ -13,7 +13,7 @@ function(add_warnings_as_errors TARGET)
         target_compile_options(${TARGET} PRIVATE -Werror)
     elseif(MSVC)
         # On Visual Studio disable warnings from 3rd party dependencies.
-        target_compile_options(${TARGET} PRIVATE /wd4100 /wd4127 /wd4267)
+        target_compile_options(${TARGET} PRIVATE /wd4100 /wd4127 /wd4267 /wd4244)
         target_compile_options(${TARGET} PRIVATE /WX)
     endif()
 endfunction()
