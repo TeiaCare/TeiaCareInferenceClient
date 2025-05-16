@@ -12,8 +12,8 @@ function(add_warnings_as_errors TARGET)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TARGET} PRIVATE -Werror)
     elseif(MSVC)
-        # On Visual Studio disable warnings 4100 and 4127 from 3rd party dependencies.
-        target_compile_options(${TARGET} PRIVATE /wd4100 /wd4127)
+        # On Visual Studio disable warnings from 3rd party dependencies.
+        target_compile_options(${TARGET} PRIVATE /wd4100 /wd4127 /wd4267)
         target_compile_options(${TARGET} PRIVATE /WX)
     endif()
 endfunction()
