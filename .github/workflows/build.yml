@@ -91,7 +91,18 @@ jobs:
             ${{ matrix.config.activate_venv }}
             pip3 install -r scripts/requirements.txt
 
+      - name: Setup Conan (Visual Studio 2022)
+        if: matrix.config.os == 'windows-2022'
+        uses: ./.github/actions/shell
+        env:
+          CMAKE_C_FLAGS: '/TP'
+        with:
+          commands: |
+            ${{ matrix.config.activate_venv }}
+            python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
+
       - name: Setup Conan
+        if: matrix.config.os == 'windows-2019' || matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'macos-14'
         uses: ./.github/actions/shell
         with:
           commands: |
