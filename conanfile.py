@@ -38,7 +38,7 @@ class TeiaCareInferenceClient(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
-    requires = "grpc/1.65.0"
+    requires = "grpc/1.67.1"
     generators = "CMakeDeps"
 
     def config_options(self):
