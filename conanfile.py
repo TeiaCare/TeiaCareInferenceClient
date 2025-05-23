@@ -58,10 +58,8 @@ class TeiaCareInferenceClient(ConanFile):
         self.options["grpc"].php_plugin=False
         self.options["grpc"].python_plugin=False
         self.options["grpc"].ruby_plugin=False
-        self.options["grpc"].secure=False
-
-        if self.settings.os == "Linux":
-            self.options["grpc"].with_libsystemd=False
+        self.options["grpc"].otel_plugin=False
+        self.options["grpc"].secure=True
 
     def generate(self):
         tc = CMakeToolchain(self)
