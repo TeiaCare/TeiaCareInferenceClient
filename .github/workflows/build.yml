@@ -91,22 +91,13 @@ jobs:
             ${{ matrix.config.activate_venv }}
             pip3 install -r scripts/requirements.txt
 
-      - name: Setup Conan (Visual Studio 2022)
-        if: matrix.config.os == 'windows-2022'
-        uses: ./.github/actions/shell
-        env:
-          CMAKE_C_FLAGS: '/TP'
-        with:
-          commands: |
-            ${{ matrix.config.activate_venv }}
-            python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
-
       - name: Setup Conan
-        if: matrix.config.os == 'windows-2019' || matrix.config.os == 'ubuntu-22.04' || matrix.config.os == 'macos-14'
         uses: ./.github/actions/shell
         with:
           commands: |
             ${{ matrix.config.activate_venv }}
+            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --insert 0 --force
+            conan user ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }} -r teiacare
             python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
       - name: Build
@@ -132,6 +123,34 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
 
+      # - name: Run Code Coverage
+      #   uses: ./.github/actions/shell
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   with:
+      #     commands: |
+      #       ${{ matrix.config.activate_venv }}
+      #       python3 scripts/tools/run_coverage.py ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
+      #   env:
+      #     CONAN_USER_HOME: ${{ github.workspace }}
+      #   continue-on-error: true
+      #   timeout-minutes: 5
+
+      # - name: Upload Codecov
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: './results/coverage/cobertura.xml'
+      #     name: TeiaCareVideoIO
+      #     slug: TeiaCare/TeiaCareVideoIO
+      #     token: ${{secrets.CODECOV_TOKEN}}
+      #     flags: '${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}'
+
+      # - name: Upload Codacy
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r results/coverage/cobertura.xml
+      #   env:
+      #    CODACY_PROJECT_TOKEN: ${{secrets.CODACY_TOKEN}}
+
       - name: Create Conan Package
         uses: ./.github/actions/shell
         with:
@@ -141,7 +160,6 @@ jobs:
             python3 scripts/conan/create.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
-        timeout-minutes: 5
       
       - name: Upload Conan Package
         uses: ./.github/actions/shell
@@ -152,4 +170,3 @@ jobs:
             python3 scripts/conan/upload.py teiacare ${{ secrets.ARTIFACTORY_URL }} ${{ secrets.ARTIFACTORY_USERNAME }} ${{ secrets.ARTIFACTORY_PASSWORD }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
-        timeout-minutes: 5
