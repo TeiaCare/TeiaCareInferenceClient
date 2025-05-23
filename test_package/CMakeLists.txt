@@ -6,4 +6,5 @@ find_package(teiacare_inference_client CONFIG REQUIRED)
 
 add_executable(teiacare_inference_client_test_package main.cpp)
 target_link_libraries(teiacare_inference_client_test_package PRIVATE teiacare::inference_client)
+target_compile_features(teiacare_inference_client_test_package PUBLIC cxx_std_20)
 install(TARGETS teiacare_inference_client_test_package DESTINATION .)
