@@ -90,6 +90,11 @@ jobs:
             python3 -m venv .venv
             ${{ matrix.config.activate_venv }}
             pip3 install -r scripts/requirements.txt
+            which conan
+            conan remote list
+            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --insert 0 --force
+            conan user ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }} -r teiacare
+            conan remote list
 
       - name: Setup Conan
         uses: ./.github/actions/shell
@@ -97,9 +102,6 @@ jobs:
           commands: |
             ${{ matrix.config.activate_venv }}
             which conan
-            conan remote list
-            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --insert 0 --force
-            conan user ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }} -r teiacare
             conan remote list
             python3 scripts/conan/setup.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
 
