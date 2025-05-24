@@ -69,21 +69,21 @@ jobs:
           python-version: '3.12'
           architecture: 'x64'
 
-      - name: Cache Virtual Environment
-        uses: actions/cache@v4
-        id: cache-venv
-        with:
-          path: .venv
-          key: venv-${{ matrix.config.os }}-${{ hashFiles('scripts/requirements.txt') }}
+      # - name: Cache Virtual Environment
+      #   uses: actions/cache@v4
+      #   id: cache-venv
+      #   with:
+      #     path: .venv
+      #     key: venv-${{ matrix.config.os }}-${{ hashFiles('scripts/requirements.txt') }}
 
-      - name: Cache Conan
-        uses: actions/cache@v4
-        with:
-          path: .conan
-          key: conan-${{ matrix.config.name }}-${{ matrix.build_type }}-${{ hashFiles('inference_client/conanfile.txt') }}
+      # - name: Cache Conan
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: .conan
+      #     key: conan-${{ matrix.config.name }}-${{ matrix.build_type }}-${{ hashFiles('inference_client/conanfile.txt') }}
 
+        # if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Setup Virtual Environment
-        if: steps.cache-venv.outputs.cache-hit != 'true'
         uses: ./.github/actions/shell
         with:
           commands: |
@@ -123,9 +123,9 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
 
-      # - name: Run Code Coverage
+      # - name: Run Code Coverage (GCC12@Ubuntu22.04)
       #   uses: ./.github/actions/shell
-      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.name == 'ubuntu2204_gcc12' }}
       #   with:
       #     commands: |
       #       ${{ matrix.config.activate_venv }}
@@ -136,7 +136,8 @@ jobs:
       #   timeout-minutes: 5
 
       # - name: Upload Codecov
-      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.name == 'ubuntu2204_gcc12' }}
+      
       #   uses: codecov/codecov-action@v4
       #   with:
       #     files: './results/coverage/cobertura.xml'
@@ -146,7 +147,7 @@ jobs:
       #     flags: '${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}'
 
       # - name: Upload Codacy
-      #   if: ${{ matrix.build_type == 'Release' && matrix.config.compiler == 'gcc' }}
+      #   if: ${{ matrix.build_type == 'Release' && matrix.config.name == 'ubuntu2204_gcc12' }}
       #   run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r results/coverage/cobertura.xml
       #   env:
       #    CODACY_PROJECT_TOKEN: ${{secrets.CODACY_TOKEN}}
