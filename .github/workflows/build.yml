@@ -83,6 +83,7 @@ jobs:
       #     key: conan-${{ matrix.config.name }}-${{ matrix.build_type }}-${{ hashFiles('inference_client/conanfile.txt') }}
 
         # if: steps.cache-venv.outputs.cache-hit != 'true'
+
       - name: Setup Virtual Environment
         uses: ./.github/actions/shell
         with:
@@ -141,7 +142,6 @@ jobs:
 
       # - name: Upload Codecov
       #   if: ${{ matrix.build_type == 'Release' && matrix.config.name == 'ubuntu2204_gcc12' }}
-      
       #   uses: codecov/codecov-action@v4
       #   with:
       #     files: './results/coverage/cobertura.xml'
@@ -165,7 +165,96 @@ jobs:
             python3 scripts/conan/create.py ${{ matrix.build_type }} ${{ matrix.config.compiler }} ${{ matrix.config.compiler_version }}
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
-      
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.name }}-${{ matrix.build_type }}
+          path: ${{ github.workspace }}/.conan
+          if-no-files-found: error
+          overwrite: true
+  
+  deploy:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: ['Debug', 'Release', 'RelWithDebInfo']
+        config:
+        #  - name: windows2022_msvc2022
+        #    os: windows-2022
+        #    compiler: visual_studio
+        #    compiler_version: 17
+        #    setup_build_env: 'call "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+        #    activate_venv: 'call ".venv\\Scripts\\activate.bat"'
+
+        #  - name: windows2019_msvc2019
+        #    os: windows-2019
+        #    compiler: visual_studio
+        #    compiler_version: 16
+        #    setup_build_env: 'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
+        #    activate_venv: 'call ".venv\\Scripts\\activate.bat"'
+
+          - name: ubuntu2204_gcc12
+            os: ubuntu-22.04
+            compiler: gcc
+            compiler_version: 12
+            setup_build_env: ""
+            activate_venv: 'source .venv/bin/activate'
+
+          - name: ubuntu2204_clang15
+            os: ubuntu-22.04
+            compiler: clang
+            compiler_version: 15
+            setup_build_env: ""
+            activate_venv: 'source .venv/bin/activate'
+
+          - name: macos14_clang15
+            os: macos-14
+            compiler: clang
+            compiler_version: 15
+            setup_build_env: ""
+            activate_venv: 'source .venv/bin/activate'
+
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.name }} ${{ matrix.build_type }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set Python version
+        if: matrix.config.os == 'windows-2022' || matrix.config.os == 'windows-2019' || matrix.config.os == 'ubuntu-22.04'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+
+      - name: Set Python version
+        if: matrix.config.os == 'macos-14'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+
+      - name: Setup Virtual Environment
+        uses: ./.github/actions/shell
+        with:
+          commands: |
+            python3 -m venv .venv
+            ${{ matrix.config.activate_venv }}
+            pip3 install -r scripts/requirements.txt
+            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --insert 0 --force
+            conan user ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }} -r teiacare
+        env:
+          CONAN_USER_HOME: ${{ github.workspace }}
+
+      - name: Download Conan cache artifacts
+        uses: actions/download-artifact@v4
+        with:  
+          name: ${{ matrix.config.name }}-${{ matrix.build_type }}
+
       - name: Upload Conan Package
         uses: ./.github/actions/shell
         with:
