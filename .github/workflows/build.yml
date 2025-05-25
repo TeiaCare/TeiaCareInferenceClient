@@ -47,7 +47,7 @@ jobs:
             activate_venv: 'source .venv/bin/activate'
 
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.name }} ${{ matrix.build_type }}
+    name: CI ${{ matrix.config.name }} ${{ matrix.build_type }}
 
     steps:
       - name: Checkout repository
@@ -217,7 +217,7 @@ jobs:
             activate_venv: 'source .venv/bin/activate'
 
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.name }} ${{ matrix.build_type }}
+    name: CD ${{ matrix.config.name }} ${{ matrix.build_type }}
 
     steps:
       - name: Checkout repository
