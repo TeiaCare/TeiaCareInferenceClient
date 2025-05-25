@@ -169,7 +169,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.name }}-${{ matrix.build_type }}
-          path: ${{ github.workspace }}/.conan
+          path: TeiaCareInferenceClient/.conan
           if-no-files-found: error
           overwrite: true
   
