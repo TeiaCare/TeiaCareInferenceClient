@@ -69,21 +69,6 @@ jobs:
           python-version: '3.12'
           architecture: 'x64'
 
-      # - name: Cache Virtual Environment
-      #   uses: actions/cache@v4
-      #   id: cache-venv
-      #   with:
-      #     path: .venv
-      #     key: venv-${{ matrix.config.os }}-${{ hashFiles('scripts/requirements.txt') }}
-
-      # - name: Cache Conan
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: .conan
-      #     key: conan-${{ matrix.config.name }}-${{ matrix.build_type }}-${{ hashFiles('inference_client/conanfile.txt') }}
-
-        # if: steps.cache-venv.outputs.cache-hit != 'true'
-
       - name: Setup Virtual Environment
         uses: ./.github/actions/shell
         with:
@@ -166,7 +151,8 @@ jobs:
         env:
           CONAN_USER_HOME: ${{ github.workspace }}
 
-      - uses: actions/upload-artifact@v4
+      - name: Publish Conan cache
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.name }}-${{ matrix.build_type }}
           path: .conan
@@ -178,6 +164,7 @@ jobs:
     needs: build
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         build_type: ['Debug', 'Release', 'RelWithDebInfo']
         config:
@@ -256,15 +243,6 @@ jobs:
         with:  
           name: ${{ matrix.config.name }}-${{ matrix.build_type }}
           path: .conan/
-
-      - name: Search Conan cache
-        uses: ./.github/actions/shell
-        with:
-          commands: |
-            ls -R
-            cd ..
-            echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-            ls -R
 
       - name: Upload Conan Package
         uses: ./.github/actions/shell
