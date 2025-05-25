@@ -181,6 +181,7 @@ jobs:
           path: .conan
           if-no-files-found: error
           overwrite: true
+          include-hidden-files: true
   
   deploy:
     needs: build
