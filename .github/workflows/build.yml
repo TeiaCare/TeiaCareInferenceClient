@@ -177,7 +177,7 @@ jobs:
           source .venv/bin/activate
           python3 scripts/cmake.py ${{ env.BUILD_TYPE }} ${{ env.COMPILER }} ${{ env.COMPILER_VERSION }} --warnings --coverage
           python3 scripts/tools/run_unit_tests.py ${{ env.BUILD_TYPE }}
-          python3 scripts/tools/run_coverage.py ${{ env.COMPILER }} ${{ env.COMPILER_VERSION }}
+          python3 scripts/tools/run_coverage.py ${{ env.COMPILER }} ${{ env.COMPILER_VERSION }} inference_client
         timeout-minutes: 5
         continue-on-error: true
         env:
