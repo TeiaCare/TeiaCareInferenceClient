@@ -3,9 +3,6 @@ grpc/1.67.1
 spdlog/1.14.1
 gtest/1.15.0
 
-#opencv/4.5.5
-#triton-client/2.31.0@teiacare/stable
-
 [generators]
 CMakeDeps
 
@@ -19,7 +16,4 @@ grpc:objective_c_plugin=False
 grpc:php_plugin=False
 grpc:python_plugin=False
 grpc:ruby_plugin=False
-gpc:otel_plugin=False
 grpc:secure=True
-
-opencv:with_ffmpeg=False

@@ -28,17 +28,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
 
-      - name: Build Docs
+      - name: Install Doxygen
         run: sudo apt-get install -y doxygen graphviz
 
       - name: Build Docs
-        run: python3 scripts/tools/run_doxygen.py
+        run: python3 scripts/tools/run_doxygen.py -d inference_client/docs/Doxyfile
 
       - name: Upload Docs
         uses: actions/upload-pages-artifact@v3

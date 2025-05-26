@@ -52,6 +52,9 @@ Examples:
 ### Dependencies Setup
 This script must be executed in order to setup the 3rd party dependencies using conan packages.
 ```bash
+conan remote add teiacare https://artifactory.app.teiacare.com/artifactory/api/conan/teiacare --insert 0 --force
+conan user <USERNAME> -p <PASSWORD> -r teiacare
+
 python scripts/conan/setup.py <Debug|Release|RelWithDebInfo> <COMPILER_NAME> <COMPILER_VERSION>
 ```
 
