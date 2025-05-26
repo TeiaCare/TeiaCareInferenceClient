@@ -169,7 +169,7 @@ jobs:
   
   deploy:
     needs: build
-    if: ${{ github.event.inputs.force_deployment == 'true' || github.ref == 'refs/heads/develop' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deployment == 'true' || github.ref == 'refs/heads/develop' }}
     strategy:
       fail-fast: false
       matrix:
