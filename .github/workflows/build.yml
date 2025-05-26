@@ -32,6 +32,13 @@ jobs:
         #    setup_build_env: 'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
         #    activate_venv: 'call ".venv\\Scripts\\activate.bat"'
 
+          - name: macos14_clang15
+            os: macos-14
+            compiler: clang
+            compiler_version: 15
+            setup_build_env: ""
+            activate_venv: 'source .venv/bin/activate'
+
           - name: ubuntu2204_gcc12
             os: ubuntu-22.04
             compiler: gcc
@@ -41,13 +48,6 @@ jobs:
 
           - name: ubuntu2204_clang15
             os: ubuntu-22.04
-            compiler: clang
-            compiler_version: 15
-            setup_build_env: ""
-            activate_venv: 'source .venv/bin/activate'
-
-          - name: macos14_clang15
-            os: macos-14
             compiler: clang
             compiler_version: 15
             setup_build_env: ""
@@ -63,14 +63,6 @@ jobs:
           submodules: true
 
       - name: Set Python version
-        if: matrix.config.os == 'windows-2022' || matrix.config.os == 'windows-2019' || matrix.config.os == 'ubuntu-22.04'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: 'x64'
-
-      - name: Set Python version
-        if: matrix.config.os == 'macos-14'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -189,6 +181,13 @@ jobs:
         #    setup_build_env: 'call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"'
         #    activate_venv: 'call ".venv\\Scripts\\activate.bat"'
 
+          # - name: macos14_clang15
+          #   os: macos-14
+          #   compiler: clang
+          #   compiler_version: 15
+          #   setup_build_env: ""
+          #   activate_venv: 'source .venv/bin/activate'
+
           - name: ubuntu2204_gcc12
             os: ubuntu-22.04
             compiler: gcc
@@ -198,13 +197,6 @@ jobs:
 
           - name: ubuntu2204_clang15
             os: ubuntu-22.04
-            compiler: clang
-            compiler_version: 15
-            setup_build_env: ""
-            activate_venv: 'source .venv/bin/activate'
-
-          - name: macos14_clang15
-            os: macos-14
             compiler: clang
             compiler_version: 15
             setup_build_env: ""
@@ -220,14 +212,6 @@ jobs:
           submodules: true
 
       - name: Set Python version
-        if: matrix.config.os == 'windows-2022' || matrix.config.os == 'windows-2019' || matrix.config.os == 'ubuntu-22.04'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: 'x64'
-
-      - name: Set Python version
-        if: matrix.config.os == 'macos-14'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
