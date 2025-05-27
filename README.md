@@ -239,6 +239,7 @@ python scripts/conan/upload.py teiacare teiacare_inference_client
 
 In order to contribute to TeiaCareInferenceClient, please follow our [contribution guidelines](./CONTRIBUTING).
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dfe9286b46d64aa4a1dfb6fde3115138)](https://app.codacy.com/gh/TeiaCare/TeiaCareInferenceClient?utm_source=github.com&utm_medium=referral&utm_content=TeiaCare/TeiaCareInferenceClient&utm_campaign=Badge_Grade)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-green.svg)](./CONTRIBUTING)
 
 
