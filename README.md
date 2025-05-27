@@ -1,11 +1,19 @@
 # TeiaCareInferenceClient
+
 Welcome to TeiaCareInferenceClient!
 
 *TeiaCareInferenceClient* is a C++ inference client library that implements KServe protocol.
 
+[![Docs](https://img.shields.io/badge/Docs-TeiaCareInferenceClient-white.svg)](https://teiacare.github.io/TeiaCareInferenceClient/md_README.html)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/dcb5cf32538040209d16b856bd432a21)](https://app.codacy.com/gh/TeiaCare/TeiaCareInferenceClient/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/dcb5cf32538040209d16b856bd432a21)](https://app.codacy.com/gh/TeiaCare/TeiaCareInferenceClient/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
+
 ![TeiaCareInferenceClient](https://socialify.git.ci/TeiaCare/TeiaCareinferenceclient/image?description=1&font=Raleway&name=1&pattern=Solid&theme=Auto)
 
 ## Getting Started
+
+This project uses git submodules so it is required to clone it using the *--recursive* flag in order to retrive the required submodules.
+
 ```bash
 git clone https://github.com/TeiaCare/TeiaCareInferenceClient.git --recursive
 ```
