@@ -107,30 +107,39 @@ bool grpc_client::is_model_ready(const std::string& model_name, const std::strin
 
 std::vector<std::string> grpc_client::model_list()
 {
-    inference::ModelListRequest request;
-    inference::ModelListResponse response;
+    inference::RepositoryIndexRequest request;
+    inference::RepositoryIndexResponse response;
     grpc::ClientContext context;
 
+    // Set repository_name to empty string for default repository
+    request.set_repository_name("");
+    request.set_ready(false); // Get all models, not just ready ones
+
     context.set_deadline(std::chrono::system_clock::now() + _rpc_timeout);
-    grpc::Status rpc_status = _stub->ModelList(&context, request, &response);
+    grpc::Status rpc_status = _stub->RepositoryIndex(&context, request, &response);
     check_status(rpc_status);
 
-    const auto models = response.models();
-    const std::vector<std::string> model_list(models.begin(), models.end());
+    std::vector<std::string> model_list;
+    for (const auto& model : response.models())
+    {
+        model_list.push_back(model.name());
+    }
 
     return model_list;
 }
 
 bool grpc_client::model_load(const std::string& model_name, const std::string&)
 {
-    inference::ModelLoadRequest request;
-    inference::ModelLoadResponse response;
+    inference::RepositoryModelLoadRequest request;
+    inference::RepositoryModelLoadResponse response;
     grpc::ClientContext context;
 
-    request.set_name(model_name);
+    // Set repository_name to empty string for default repository
+    request.set_repository_name("");
+    request.set_model_name(model_name);
 
     context.set_deadline(std::chrono::system_clock::now() + _rpc_timeout);
-    grpc::Status rpc_status = _stub->ModelLoad(&context, request, &response);
+    grpc::Status rpc_status = _stub->RepositoryModelLoad(&context, request, &response);
     check_status(rpc_status);
 
     return true;
@@ -138,14 +147,16 @@ bool grpc_client::model_load(const std::string& model_name, const std::string&)
 
 bool grpc_client::model_unload(const std::string& model_name, const std::string&)
 {
-    inference::ModelUnloadRequest request;
-    inference::ModelUnloadResponse response;
+    inference::RepositoryModelUnloadRequest request;
+    inference::RepositoryModelUnloadResponse response;
     grpc::ClientContext context;
 
-    request.set_name(model_name);
+    // Set repository_name to empty string for default repository
+    request.set_repository_name("");
+    request.set_model_name(model_name);
 
     context.set_deadline(std::chrono::system_clock::now() + _rpc_timeout);
-    grpc::Status rpc_status = _stub->ModelUnload(&context, request, &response);
+    grpc::Status rpc_status = _stub->RepositoryModelUnload(&context, request, &response);
     check_status(rpc_status);
 
     return true;
