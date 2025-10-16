@@ -25,7 +25,7 @@ int main(int, char**)
     auto client = tc::infer::create_client("localhost:8001");
 
     auto model_name = "simple_int32";
-    auto model_version = "1";
+    auto model_version = "";
 
     try
     {
@@ -33,6 +33,24 @@ int main(int, char**)
         auto is_model_ready = client->is_model_ready(model_name, model_version);
         spdlog::debug("\n");
         spdlog::debug("is_model_ready: {}", is_model_ready);
+
+        // Model List
+        auto model_list = client->model_list();
+        spdlog::debug("\n");
+        spdlog::debug("model_list:");
+        for (auto&& model : model_list)
+            spdlog::debug(model);
+
+        // Model Load
+        auto is_model_loaded = client->model_load(model_name, model_version);
+        spdlog::debug("\n");
+        spdlog::debug("model_load: {}", is_model_loaded);
+
+        if (!is_model_loaded)
+        {
+            spdlog::error("Model {} version {} not loaded", model_name, model_version);
+            return EXIT_FAILURE;
+        }
 
         // Model Metadata
         auto model_metadata = client->model_metadata(model_name, model_version);
@@ -59,25 +77,10 @@ int main(int, char**)
             spdlog::debug("    shape: [{}]", fmt::join(output.shape, ","));
         }
 
-        // Model List
-        /* CURRENTLY NOT IMPLEMENTED IN TRITON INFERENCE SERVER (AMD SERVER ONLY) */
-        // auto model_list = client->model_list();
-        // spdlog::debug("\n");
-        // spdlog::debug("model_list:");
-        // for (auto&& model : model_list)
-        //     spdlog::debug(model);
-
-        // Model Load
-        /* CURRENTLY NOT IMPLEMENTED IN TRITON INFERENCE SERVER (AMD SERVER ONLY) */
-        // auto is_model_loaded = client->model_load(model_name, model_version);
-        // spdlog::debug("\n");
-        // spdlog::debug("model_load: {}", is_model_loaded);
-
         // Model Unload
-        /* CURRENTLY NOT IMPLEMENTED IN TRITON INFERENCE SERVER (AMD SERVER ONLY) */
-        // auto is_model_unloaded = client->model_unload(model_name, model_version);
-        // spdlog::debug("\n");
-        // spdlog::debug("model_unload: {}", is_model_unloaded);
+        auto is_model_unloaded = client->model_unload(model_name, model_version);
+        spdlog::debug("\n");
+        spdlog::debug("model_unload: {}", is_model_unloaded);
     }
     catch (const std::runtime_error& ex)
     {
