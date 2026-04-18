@@ -38,7 +38,20 @@ class TeiaCareInferenceClient(ConanFile):
     exports_sources = "CMakeLists.txt", "inference_client/CMakeLists.txt", "inference_client/include/*", "inference_client/src/*", "cmake/*", "proto/services.proto"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    default_options = {
+        "shared": False,
+        "fPIC": True,
+        "grpc/*:codegen": True,
+        "grpc/*:csharp_ext": False,
+        "grpc/*:cpp_plugin": True,
+        "grpc/*:csharp_plugin": False,
+        "grpc/*:node_plugin": False,
+        "grpc/*:objective_c_plugin": False,
+        "grpc/*:php_plugin": False,
+        "grpc/*:python_plugin": False,
+        "grpc/*:ruby_plugin": False,
+        "grpc/*:secure": True,
+    }
     requires = "grpc/1.67.1"
     generators = "CMakeDeps"
 
@@ -49,17 +62,6 @@ class TeiaCareInferenceClient(ConanFile):
     def configure(self):
         if self.options.shared:
             del self.options.fPIC
-
-        self.options["grpc"].codegen=True
-        self.options["grpc"].csharp_ext=False
-        self.options["grpc"].cpp_plugin=True
-        self.options["grpc"].csharp_plugin=False
-        self.options["grpc"].node_plugin=False
-        self.options["grpc"].objective_c_plugin=False
-        self.options["grpc"].php_plugin=False
-        self.options["grpc"].python_plugin=False
-        self.options["grpc"].ruby_plugin=False
-        self.options["grpc"].secure=True
 
     def layout(self):
         cmake_layout(self)
