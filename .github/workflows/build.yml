@@ -70,6 +70,8 @@ jobs:
             python3 -m venv .venv
             ${{ matrix.config.activate_venv }}
             pip3 install -r scripts/scripts/requirements.txt
+            mkdir -p "$CONAN_HOME"
+            printf "tools.files.download:retry=5\ntools.files.download:retry_wait=15\n" > "$CONAN_HOME/global.conf"
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
 
@@ -147,6 +149,8 @@ jobs:
             python3 -m venv .venv
             source .venv/bin/activate
             pip3 install -r scripts/scripts/requirements.txt
+            mkdir -p "$CONAN_HOME"
+            printf "tools.files.download:retry=5\ntools.files.download:retry_wait=15\n" > "$CONAN_HOME/global.conf"
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
 
