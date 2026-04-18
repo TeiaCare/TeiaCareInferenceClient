@@ -35,7 +35,7 @@ class TeiaCareInferenceClient(ConanFile):
     description = "TeiaCareInferenceClient is a C++ inference client library that implements KServe protocol"
     topics = ("inference_client", "kserve")
     exports = "VERSION"
-    exports_sources = "CMakeLists.txt", "inference_client/CMakeLists.txt", "inference_client/include/*", "inference_client/src/*", "cmake/*", "proto/services.proto"
+    exports_sources = "VERSION", "CMakeLists.txt", "inference_client/CMakeLists.txt", "inference_client/include/*", "inference_client/src/*", "cmake/*", "proto/services.proto"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {
@@ -52,8 +52,15 @@ class TeiaCareInferenceClient(ConanFile):
         "grpc/*:ruby_plugin": False,
         "grpc/*:secure": True,
     }
-    requires = "grpc/1.67.1"
     generators = "CMakeDeps"
+
+    def requirements(self):
+        self.requires("grpc/1.67.1")
+        # Pin abseil to the 20240722 LTS. The 20250127 LTS added a C++20
+        # `requires(!IsLifetimeBoundAssignmentFrom<...>)` clause in
+        # raw_hash_set.h that triggers eager std::variant instantiation of
+        # protobuf's incomplete UntypedMessage on clang15 + libstdc++12.
+        self.requires("abseil/20240722.1", override=True)
 
     def config_options(self):
         if self.settings.os == "Windows":
