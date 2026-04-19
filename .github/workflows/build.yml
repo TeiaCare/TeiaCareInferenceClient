@@ -78,8 +78,11 @@ jobs:
       - name: Install g++-13 (clang-15 libstdc++ fix)
         if: matrix.config.name == 'ubuntu2204_clang15'
         run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install -y g++-13
+          sudo apt-get install -y gcc-13 g++-13
+          test -d /usr/lib/gcc/x86_64-linux-gnu/13 || { echo "gcc-13 install did not populate expected dir"; exit 1; }
+          ls /usr/lib/gcc/x86_64-linux-gnu/
 
       - name: Build
         uses: ./.github/actions/shell
