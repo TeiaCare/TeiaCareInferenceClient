@@ -75,6 +75,12 @@ jobs:
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
 
+      - name: Install g++-13 (clang-15 libstdc++ fix)
+        if: matrix.config.name == 'ubuntu2204_clang15'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-13
+
       - name: Build
         uses: ./.github/actions/shell
         with:
