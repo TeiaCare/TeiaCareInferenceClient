@@ -9,6 +9,7 @@
 **/.cache
 **/.conan
 **/.conan2
+**/.conan2-*
 **/.clangd
 /data
 /docs

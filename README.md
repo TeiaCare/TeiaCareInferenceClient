@@ -68,17 +68,17 @@ conan remote login teiacare <ARTIFACTORY_USERNAME> -p <ARTIFACTORY_PASSWORD>
 ```
 
 ### Install Dependencies
-Install Conan packages and generate `CMakePresets.json` together with the CMake toolchain file. Pick the profile that matches your platform (available profiles are under `scripts/profiles/`): `linux-clang`, `linux-gcc`, `macos-arm64`, `macos-x64`, `windows-msvc`.
+Install Conan packages and generate `CMakePresets.json` together with the CMake toolchain file. Pick the profile that matches your platform (available profiles are under `.ci/profiles/`, the same ones used by CI): `linux-clang-15`, `linux-gcc-12`, `macos-arm64-clang15`, `windows-msvc-2022`.
 
 ```bash
 # Linux (clang) - Debug
-conan install inference_client -b=missing -pr:a=scripts/profiles/linux-clang -s build_type=Debug
+conan install inference_client -b=missing -pr:a=.ci/profiles/linux-clang-15 -s build_type=Debug
 
 # Linux (gcc) - Release
-conan install inference_client -b=missing -pr:a=scripts/profiles/linux-gcc -s build_type=Release
+conan install inference_client -b=missing -pr:a=.ci/profiles/linux-gcc-12 -s build_type=Release
 
 # Windows (msvc) - Release
-conan install inference_client -b=missing -pr:a=scripts/profiles/windows-msvc -s build_type=Release
+conan install inference_client -b=missing -pr:a=.ci/profiles/windows-msvc-2022 -s build_type=Release
 ```
 
 ### Configure, Build and Install

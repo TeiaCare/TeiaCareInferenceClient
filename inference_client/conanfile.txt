@@ -1,4 +1,7 @@
 [requires]
+# Keep in sync with the abseil pin in the root conanfile.py: both graphs must
+# resolve the same abseil so grpc gets one package_id and is built only once.
+abseil/20240722.1
 grpc/1.67.1
 spdlog/1.14.1
 gtest/1.15.0

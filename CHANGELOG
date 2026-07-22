@@ -2,3 +2,10 @@
 
 ## [1.0.0] - 2024-xx-xx
 ### Added
+
+## [0.4.0] - 2026-07-22
+### Changed
+- Migrated the build toolchain from Conan 1 to Conan 2 (v0.3.0 remains the last Conan 1 compatible release).
+- Restored Linux clang-15 CI support: dependencies build with C++17 while the library keeps C++20 (clang-15 cannot compile protobuf 5.27 / abseil in C++20 mode).
+- Pinned abseil to the 20240722.1 LTS in both dependency graphs so gRPC is built once per CI job.
+- CI profiles now live in `.ci/profiles/` and are referenced by the README.

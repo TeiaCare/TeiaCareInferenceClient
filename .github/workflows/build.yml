@@ -42,14 +42,15 @@ jobs:
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
-          - name: ubuntu2204_clang17
+          - name: ubuntu2204_clang15
             os: ubuntu-22.04
-            profile: .ci/profiles/linux-clang-17
+            profile: .ci/profiles/linux-clang-15
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
     runs-on: ${{ matrix.config.os }}
     name: CI ${{ matrix.config.name }} ${{ matrix.build_type }}
+    timeout-minutes: 240
 
     steps:
       - name: Checkout repository
@@ -75,19 +76,11 @@ jobs:
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
 
-      - name: Install clang-17 and libstdc++-13
-        if: matrix.config.name == 'ubuntu2204_clang17'
+      - name: Check clang-15
+        if: matrix.config.name == 'ubuntu2204_clang15'
         run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
-          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
-          chmod +x /tmp/llvm.sh
-          sudo /tmp/llvm.sh 17
-          test -x /usr/bin/clang-17 || { echo "clang-17 not installed"; exit 1; }
-          test -d /usr/lib/gcc/x86_64-linux-gnu/13 || { echo "gcc-13 headers missing"; exit 1; }
-          clang-17 --version
-          ls /usr/lib/gcc/x86_64-linux-gnu/
+          test -x /usr/bin/clang-15 || { echo "clang-15 not installed"; exit 1; }
+          clang-15 --version
 
       - name: Build
         uses: ./.github/actions/shell
@@ -221,7 +214,7 @@ jobs:
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
 
-          - name: ubuntu2204_clang17
+          - name: ubuntu2204_clang15
             os: ubuntu-22.04
             setup_build_env: ""
             activate_venv: 'source .venv/bin/activate'
