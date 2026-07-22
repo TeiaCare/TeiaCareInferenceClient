@@ -258,6 +258,12 @@ jobs:
           commands: |
             ${{ matrix.config.activate_venv }}
             ${{ matrix.config.setup_build_env }}
-            conan upload "*" --remote teiacare --confirm
+            # Upload ONLY this package at the version being released.
+            # Never upload "*": the cache also contains Conan 2 builds of
+            # shared references (grpc, abseil, ...) still consumed from this
+            # remote by Conan 1 projects, and new revisions would break them
+            # (this is what broke the teiacms worker when a Conan 2 build of
+            # v0.3.0 was uploaded).
+            conan upload "teiacare_inference_client/$(cat VERSION)" --remote teiacare --confirm
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
