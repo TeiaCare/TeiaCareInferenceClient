@@ -188,7 +188,7 @@ jobs:
 
   deploy:
     needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deployment == 'true' || github.ref == 'refs/heads/develop' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_deployment == 'true' || startsWith(github.ref, 'refs/tags/v') }}
     strategy:
       fail-fast: false
       matrix:
@@ -241,8 +241,6 @@ jobs:
             python3 -m venv .venv
             ${{ matrix.config.activate_venv }}
             pip3 install -r scripts/scripts/requirements.txt
-            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --force
-            conan remote login teiacare ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }}
         env:
           CONAN_HOME: ${{ github.workspace }}/.conan2
 
@@ -258,6 +256,10 @@ jobs:
           commands: |
             ${{ matrix.config.activate_venv }}
             ${{ matrix.config.setup_build_env }}
+            # The cache artifact overwrites remotes.json, so the remote must
+            # be configured after the download, not in the setup step.
+            conan remote add teiacare ${{ secrets.ARTIFACTORY_URL }}/teiacare --force
+            conan remote login teiacare ${{ secrets.ARTIFACTORY_USERNAME }} -p ${{ secrets.ARTIFACTORY_PASSWORD }}
             # Upload ONLY this package at the version being released.
             # Never upload "*": the cache also contains Conan 2 builds of
             # shared references (grpc, abseil, ...) still consumed from this
