@@ -1,6 +1,6 @@
 # TeiaCareInferenceClient Changelog
 
-## [0.4.0] - 2026-07-22
+## [0.4.0] - 2026-07-23
 ### Changed
 - Migrated the build toolchain from Conan 1 to Conan 2 (v0.3.0 remains the last Conan 1 compatible release).
 - Restored Linux clang-15 CI support: dependencies build with C++17 while the library keeps C++20 (clang-15 cannot compile protobuf 5.27 / abseil in C++20 mode).
