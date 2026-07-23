@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from conans import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.files import copy
 import re
 
 def get_project_version():
@@ -34,12 +35,32 @@ class TeiaCareInferenceClient(ConanFile):
     description = "TeiaCareInferenceClient is a C++ inference client library that implements KServe protocol"
     topics = ("inference_client", "kserve")
     exports = "VERSION"
-    exports_sources = "CMakeLists.txt", "inference_client/CMakeLists.txt", "inference_client/include/*", "inference_client/src/*", "cmake/*", "proto/services.proto"
+    exports_sources = "VERSION", "CMakeLists.txt", "inference_client/CMakeLists.txt", "inference_client/include/*", "inference_client/src/*", "cmake/*", "proto/services.proto"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
-    requires = "grpc/1.67.1"
+    default_options = {
+        "shared": False,
+        "fPIC": True,
+        "grpc/*:codegen": True,
+        "grpc/*:csharp_ext": False,
+        "grpc/*:cpp_plugin": True,
+        "grpc/*:csharp_plugin": False,
+        "grpc/*:node_plugin": False,
+        "grpc/*:objective_c_plugin": False,
+        "grpc/*:php_plugin": False,
+        "grpc/*:python_plugin": False,
+        "grpc/*:ruby_plugin": False,
+        "grpc/*:secure": True,
+    }
     generators = "CMakeDeps"
+
+    def requirements(self):
+        self.requires("grpc/1.67.1")
+        # Pin abseil to the 20240722 LTS. The 20250127 LTS added a C++20
+        # `requires(!IsLifetimeBoundAssignmentFrom<...>)` clause in
+        # raw_hash_set.h that triggers eager std::variant instantiation of
+        # protobuf's incomplete UntypedMessage on clang15 + libstdc++12.
+        self.requires("abseil/20240722.1", override=True)
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -49,20 +70,12 @@ class TeiaCareInferenceClient(ConanFile):
         if self.options.shared:
             del self.options.fPIC
 
-        self.options["grpc"].codegen=True
-        self.options["grpc"].csharp_ext=False
-        self.options["grpc"].cpp_plugin=True
-        self.options["grpc"].csharp_plugin=False
-        self.options["grpc"].node_plugin=False
-        self.options["grpc"].objective_c_plugin=False
-        self.options["grpc"].php_plugin=False
-        self.options["grpc"].python_plugin=False
-        self.options["grpc"].ruby_plugin=False
-        self.options["grpc"].secure=True
+    def layout(self):
+        cmake_layout(self)
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.variables["BUILD_SHARED_LIBS"] = self.options.shared
+        tc.variables["BUILD_SHARED_LIBS"] = "ON" if self.options.shared else "OFF"
         tc.variables["TC_ENABLE_UNIT_TESTS"] = False
         tc.variables["TC_ENABLE_UNIT_TESTS_COVERAGE"] = False
         tc.variables["TC_ENABLE_BENCHMARKS"] = False
@@ -82,7 +95,7 @@ class TeiaCareInferenceClient(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy(pattern="VERSION")
+        copy(self, "VERSION", src=self.source_folder, dst=self.package_folder)
         cmake = CMake(self)
         cmake.install()
 
