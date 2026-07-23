@@ -1,19 +1,23 @@
 [requires]
+# Keep in sync with the abseil pin in the root conanfile.py: both graphs must
+# resolve the same abseil so grpc gets one package_id and is built only once.
+abseil/20240722.1
 grpc/1.67.1
 spdlog/1.14.1
 gtest/1.15.0
 
 [generators]
 CMakeDeps
+CMakeToolchain
 
 [options]
-grpc:codegen=True
-grpc:csharp_ext=False
-grpc:cpp_plugin=True
-grpc:csharp_plugin=False
-grpc:node_plugin=False
-grpc:objective_c_plugin=False
-grpc:php_plugin=False
-grpc:python_plugin=False
-grpc:ruby_plugin=False
-grpc:secure=True
+grpc/*:codegen=True
+grpc/*:csharp_ext=False
+grpc/*:cpp_plugin=True
+grpc/*:csharp_plugin=False
+grpc/*:node_plugin=False
+grpc/*:objective_c_plugin=False
+grpc/*:php_plugin=False
+grpc/*:python_plugin=False
+grpc/*:ruby_plugin=False
+grpc/*:secure=True

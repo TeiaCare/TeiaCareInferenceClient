@@ -1,0 +1,23 @@
+[settings]
+os=Linux
+arch=x86_64
+compiler=clang
+compiler.version=15
+compiler.libcxx=libstdc++11
+# clang-15's front-end cannot compile protobuf 5.27 / abseil in C++20 mode
+# (incomplete-type-in-trait on UntypedMessage, constexpr kDefaultCapacity in
+# raw_hash_set), so dependencies build with C++17 while the consumer ('&') and
+# this library keep C++20, matching what the Conan 1 CI effectively did.
+# The explicit package pattern is needed so the test_package phase of
+# 'conan create' (where the library is a dependency, not the consumer)
+# resolves the same C++20 binary that was just built.
+compiler.cppstd=17
+&:compiler.cppstd=20
+teiacare_inference_client/*:compiler.cppstd=20
+build_type=Release
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.system.package_manager:mode=install
+tools.system.package_manager:sudo=True
+tools.build:compiler_executables={"c": "clang-15", "cpp": "clang++-15"}
