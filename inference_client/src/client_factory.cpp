@@ -16,12 +16,20 @@
 
 #include "grpc_client.hpp"
 #include <grpcpp/create_channel.h>
+#include <grpcpp/support/channel_arguments.h>
+
+#include <limits>
 
 namespace tc::infer
 {
 std::unique_ptr<client_interface> create_client(const std::string& uri, std::chrono::milliseconds rpc_timeout)
 {
-    std::shared_ptr<grpc::ChannelInterface> channel = grpc::CreateChannel(uri, grpc::InsecureChannelCredentials());
+    // gRPC caps received messages at 4 MB by default; an inference reply can be
+    // larger (an instance-segmentation model returns its mask prototypes as one
+    // tensor, ~4.5 MB for yolo11-seg at 640). Same limit as the Triton C++ client.
+    grpc::ChannelArguments arguments;
+    arguments.SetMaxReceiveMessageSize(std::numeric_limits<int>::max());
+    std::shared_ptr<grpc::ChannelInterface> channel = grpc::CreateCustomChannel(uri, grpc::InsecureChannelCredentials(), arguments);
     std::unique_ptr<inference::GRPCInferenceService::StubInterface> stub = inference::GRPCInferenceService::NewStub(channel);
     return std::make_unique<tc::infer::grpc_client>(std::move(stub), rpc_timeout);
 }
