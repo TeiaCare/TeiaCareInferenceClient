@@ -1,5 +1,9 @@
 # TeiaCareInferenceClient Changelog
 
+## [0.4.1] - 2026-10-14
+### Fixed
+- `create_client(uri)` no longer rejects inference replies above gRPC's 4 MB default receive limit (`RESOURCE_EXHAUSTED: Received message larger than max`): the channel is created with a max receive message size of INT32_MAX, as the Triton C++ client does. Instance-segmentation models (e.g. yolo11-seg, ~4.5 MB per reply with the mask prototypes) failed on every inference.
+
 ## [0.4.0] - 2026-07-23
 ### Changed
 - Migrated the build toolchain from Conan 1 to Conan 2 (v0.3.0 remains the last Conan 1 compatible release).

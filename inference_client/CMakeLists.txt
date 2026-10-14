@@ -79,6 +79,7 @@ if(TC_ENABLE_UNIT_TESTS)
     set(UNIT_TESTS_SRC
         tests/main.cpp
         tests/test_client_factory.cpp
+        tests/test_large_response.cpp
     )
 
     add_executable(${TEST_TARGET_NAME})
